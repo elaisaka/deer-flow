@@ -69,6 +69,45 @@ def test_old_extension_has_no_capability():
 
 
 @pytest.mark.asyncio
+async def test_schema_invocation_does_not_stream_unvalidated_text_into_agent_chat(host):
+    from langchain_core.language_models.fake_chat_models import FakeListChatModel
+    from langgraph.graph import END, START, MessagesState, StateGraph
+
+    from deerflow.runtime.events.store.memory import MemoryRunEventStore
+    from deerflow.runtime.journal import RunJournal
+
+    host.factory.return_value = FakeListChatModel(responses=['{"label":"positive"}'])
+    loaded, services, _ = await host.start([GRANT])
+    event_store = MemoryRunEventStore()
+    journal = RunJournal("schema-call", "schema-thread", event_store)
+
+    async def answer(state):
+        result = await services[0].deps.model_invoker.invoke(request(response_schema=SCHEMA))
+        assert result.structured_output == {"label": "positive"}
+        return {"messages": [AIMessage(content="validated answer")]}
+
+    builder = StateGraph(MessagesState)
+    builder.add_node("answer", answer)
+    builder.add_edge(START, "answer")
+    builder.add_edge("answer", END)
+    streamed = []
+    updates = []
+    try:
+        async for mode, item in builder.compile().astream({"messages": []}, stream_mode=["messages", "updates"], config={"callbacks": [journal]}):
+            if mode == "messages":
+                streamed.append(item[0].content)
+            else:
+                updates.append(item)
+        assert '"label"' not in "".join(streamed)
+        assert updates[-1]["answer"]["messages"][0].content == "validated answer"
+        await journal.flush()
+        events = await event_store.list_events("schema-thread", "schema-call")
+        assert not any(e["event_type"] == "llm.ai.response" and '"label"' in str(e["content"]) for e in events)
+    finally:
+        await stop_services(loaded)
+
+
+@pytest.mark.asyncio
 async def test_grant_is_bound_to_installation_not_entrypoint(host):
     loaded, services, diagnostics = await host.start([GRANT, None, {"roles": {"fast": "host-model"}}])
     assert not diagnostics

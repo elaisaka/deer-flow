@@ -299,10 +299,10 @@ schema checks and output validation run in terminable isolated Python children,
 with pipe I/O on admission-bounded dedicated threads (Windows selector-loop compatible,
 independent of a potentially saturated provider executor). Cancellation kills and
 reaps those children before releasing admission.
-Grants and model profiles are startup snapshots; changing them requires restarting the
-Gateway. Calls use the normal model factory and attributed tracing, return plain text,
-usage counts and optionally locally validated JSON objects, and never return raw model
-objects or provider exception chains. See `backend/docs/extension-model-invocation.md`.
+Restart Gateway to change grants/models. `nostream` and internal-output tags hide raw
+chat/journal responses and errors while preserving token accounting and tracing.
+Calls return text, usage and validated JSON, never raw models or exception chains.
+See `backend/docs/extension-model-invocation.md`.
 
 The Gateway constructs the configured run and event stores before
 services so the reader is usable from `start()`. Changed-run discovery uses an opaque,

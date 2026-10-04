@@ -206,7 +206,7 @@ cd frontend && pnpm rstest run <pattern>     # e.g. pnpm rstest run my-component
 - Frontend work → **[frontend/AGENTS.md](frontend/AGENTS.md)**
 - Setup & install → **[Install.md](Install.md)**, **[CONTRIBUTING.md](CONTRIBUTING.md)**
 - Project overview & usage → **[README.md](README.md)** (translation: `README_zh.md`)
-- Independent project scope → **[docs/PROJECT_SCOPE.md](docs/PROJECT_SCOPE.md)**.
+- Personal learning: [scope](docs/PROJECT_SCOPE.md), [RAG](docs/RAG.md).
 - Windows local file service → **[docs/LOCAL_FILE_SERVICE.md](docs/LOCAL_FILE_SERVICE.md)**;
   independent code and execution-boundary guidance in **[services/local_file_service/AGENTS.md](services/local_file_service/AGENTS.md)**.
 - Phase-two file organization → **[docs/FILE_ORGANIZATION.md](docs/FILE_ORGANIZATION.md)**;

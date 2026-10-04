@@ -6,6 +6,9 @@ Backend tests must preserve the runtime invariants they exercise without changin
 
 Knowledge management regression guidance: `backend/knowledge_base_extension/AGENTS.md`.
 Use synthetic PDFs and temporary stores; never act for the user at confirmation.
+`test_personal_rag.py` tests actual ToolNode identity, atomic generations, source
+permissions and low-priority/no-tool generation. Use controlled embeddings and
+recording invokers; do not label offline success as real semantic/answer quality.
 
 `test_file_organization.py` uses synthetic temporary roots and actual native file
 handles. Run this tier with the independent Windows service environment and

@@ -471,6 +471,9 @@ class RunJournal(BaseCallbackHandler):
         if self._closed:
             return
 
+        # Host text invocations validate/project their output before tools return.
+        # Keep usage accounting, but never expose their raw response as Agent text.
+        internal_output = "deerflow:internal-model-output" in (tags or [])
         messages: list[AnyMessage] = []
         response_events: list[dict] = []
         should_schedule_progress = False
@@ -487,7 +490,7 @@ class RunJournal(BaseCallbackHandler):
                     logger.warning(f"on_llm_end {run_id}: generation has no message attribute: {gen}")
 
         for message in messages:
-            if is_canonical_callback:
+            if is_canonical_callback and not internal_output:
                 self._remember_current_run_tool_calls(message, caller=caller)
 
             # Latency
@@ -500,7 +503,7 @@ class RunJournal(BaseCallbackHandler):
             # callback returns, including nested token-detail mappings.
             usage_dict = deepcopy(dict(usage)) if usage else {}
             additional_kwargs = getattr(message, "additional_kwargs", None) or {}
-            if is_canonical_callback and isinstance(additional_kwargs, dict) and additional_kwargs.get("deerflow_error_fallback"):
+            if is_canonical_callback and not internal_output and isinstance(additional_kwargs, dict) and additional_kwargs.get("deerflow_error_fallback"):
                 self._had_llm_error_fallback = True
                 detail = additional_kwargs.get("error_detail")
                 reason = additional_kwargs.get("error_reason")
@@ -572,7 +575,7 @@ class RunJournal(BaseCallbackHandler):
 
                     should_schedule_progress = True
 
-        if messages:
+        if messages and not internal_output:
             self._queue_llm_response_events(
                 str(run_id),
                 response_events,
@@ -585,6 +588,8 @@ class RunJournal(BaseCallbackHandler):
 
     def on_llm_error(self, error: BaseException, *, run_id: UUID, **kwargs: Any) -> None:
         self._llm_start_times.pop(str(run_id), None)
+        if "deerflow:internal-model-output" in (kwargs.get("tags") or []):
+            return  # The host invoker reports only its normalized public error.
         self._put(
             event_type=LLM_ERROR_EVENT.event_type,
             category=LLM_ERROR_EVENT.category,

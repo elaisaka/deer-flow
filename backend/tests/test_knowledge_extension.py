@@ -170,11 +170,14 @@ async def test_model_schema_cannot_delete_confirm_or_update(tmp_path):
         def routers(self, routers):
             pass
 
+        def service(self, service):
+            pass
+
     credentials = tmp_path / "credentials.json"
     credentials.write_text(json.dumps({"url": "http://host.docker.internal:8765", "token": "synthetic"}), encoding="utf-8")
     install(Registry(), {"enabled": True, "data_dir": str(tmp_path / "store"), "credentials_path": str(credentials)})
     contribution = captured[0]
-    assert {t.name for t in contribution.tools} == {"knowledge_bases", "knowledge_documents", "knowledge_document", "knowledge_import_local"}
+    assert {t.name for t in contribution.tools} == {"knowledge_bases", "knowledge_documents", "knowledge_document", "knowledge_import_local", "knowledge_index_status", "knowledge_search", "knowledge_answer"}
     assert "delete" not in {b.name for b in contribution.backend}
     s = service(tmp_path / "other")
     context = SimpleNamespace(principal=ExtensionPrincipal("owner", is_admin=True))

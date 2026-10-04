@@ -2,11 +2,13 @@
 
 [English](./README.md) | 中文
 
-> 本独立仓库基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发，规划个人文件整理、RAG 与学习助手功能，详见[项目范围](docs/PROJECT_SCOPE.md)。第一阶段已通过 Docker 聊天验收授权目录查询、列表和真实新建文件夹，见[本地文件服务指南](docs/LOCAL_FILE_SERVICE.md)。第二阶段沿用该服务，新增确定性整理预览、版本确认、持久化逐项记录及有条件撤销；开发栈已通过真人确认、真实分类、聊天撤销和重启查询，测试限制见[文件整理指南](docs/FILE_ORGANIZATION.md)。RAG、学习功能仍待开发，下文保留上游功能说明。
+> 本独立仓库基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发，规划个人文件整理、RAG 与学习助手功能，详见[项目范围](docs/PROJECT_SCOPE.md)。第一阶段已通过 Docker 聊天验收授权目录查询、列表和真实新建文件夹，见[本地文件服务指南](docs/LOCAL_FILE_SERVICE.md)。第二阶段沿用该服务，新增确定性整理预览、版本确认、持久化逐项记录及有条件撤销；开发栈已通过真人确认、真实分类、聊天撤销和重启查询，测试限制见[文件整理指南](docs/FILE_ORGANIZATION.md)。学习功能仍待开发，下文保留上游功能说明。
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](./backend/pyproject.toml)
 
-第三阶段新增[个人知识库资料管理扩展](docs/KNOWLEDGE_BASE.md)：PDF/Markdown/TXT 导入、来源和解析状态、内容去重、稳定文档版本、真人确认更新及删除知识库副本。更新和删除均通过浏览器按钮确认，无需 Windows 密钥；文件整理仍使用独立确认机制。实际验收进度与未验证项目见指南；当前不建立向量或 RAG 索引。
+第三阶段新增[个人知识库资料管理扩展](docs/KNOWLEDGE_BASE.md)：PDF/Markdown/TXT 导入、来源和解析状态、内容去重、稳定文档版本、真人确认更新及删除知识库副本。更新和删除均通过浏览器按钮确认，无需 Windows 密钥；文件整理仍使用独立确认机制。实际验收进度与未验证项目见指南。
+
+第四阶段在同一 SQLite 资料库中新增当前版本向量索引、明确范围检索、无执行工具的证据问答、受权限控制的原文引用和 24 问合成 Redis 评测。知识库页面支持逐篇索引、重试/重建及片段测试。开发栈已用本地 Ollama bge-m3 完成真实索引、聊天、真人更新/删除及重启验证；19 个可回答合成问题 Recall@6 为 1.0。完整回答/引用人工评分、生产栈与实际账单仍未验证。启动、聊天指令、实际门禁与历史片段保留策略见 [RAG 指南](docs/RAG.md)。学习计划、笔记和错题尚未开发。
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](./Makefile)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 

@@ -24,6 +24,25 @@ def test_run_journal_is_marked_as_loop_bound():
     assert RunJournal.deerflow_loop_bound is True
 
 
+@pytest.mark.anyio
+async def test_internal_model_output_is_not_chat_history_but_usage_is_counted_once():
+    store = MemoryRunEventStore()
+    journal = RunJournal("internal-call", "internal-thread", store)
+    run_id = uuid4()
+    tags = ["nostream", "deerflow:internal-model-output", "middleware:extension_model_invocation"]
+    response = LLMResult(generations=[[ChatGeneration(message=AIMessage(content="unvalidated private output", usage_metadata={"input_tokens": 8, "output_tokens": 4, "total_tokens": 12}))]])
+    journal.on_llm_end(response, run_id=run_id, tags=tags)
+    journal.on_llm_end(response, run_id=run_id, tags=tags)
+    journal.on_llm_error(RuntimeError("private provider URL/key"), run_id=uuid4(), tags=tags)
+    await journal.flush()
+    events = await store.list_events("internal-thread", "internal-call")
+    assert not any(e["event_type"] in {"llm.ai.response", "llm.error"} for e in events)
+    assert "private" not in str(events)
+    completion = journal.get_completion_data()
+    assert completion["total_tokens"] == 12
+    assert completion["last_ai_message"] is None
+
+
 def test_tool_promotion_claim_is_atomic_across_parallel_sync_wrappers():
     journal = RunJournal("r-claim", "t-claim", MemoryRunEventStore())
     barrier = Barrier(16)

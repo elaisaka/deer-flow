@@ -150,20 +150,10 @@ uv run pytest tests/test_bench_concurrency.py tests/test_bench_worker.py -q
 ## Commands
 
 **Root directory** (for full application):
-```bash
-make check      # Check system requirements
-make install    # Install all dependencies (frontend + backend)
-make extension-install SOURCE=...  # Install and enable a trusted Python extension
-make extension-upgrade SOURCE=...  # Replace an installed extension and keep its config
-make extension-list                # List configured Python extensions
-make extension-enable NAME=...     # Enable an installed extension
-make extension-disable NAME=...    # Disable an extension without uninstalling it
-make extension-remove NAME=...     # Remove a managed extension
-make detect-thread-boundaries  # Inventory backend executor/thread/event-loop boundaries
-make dev        # Start all services (Gateway + Frontend + Nginx), with config.yaml preflight
-make start      # Start production services locally
-make stop       # Stop all services
-```
+Use root `Makefile` for check/install, extension install/upgrade/list/enable/
+disable/remove, thread-boundary detection and dev/start/stop orchestration.
+Exact examples live in the inherited root `AGENTS.md` and `make help`; run
+these commands from the repository root. Startup retains config.yaml preflight.
 
 **Backend directory** (for backend development only):
 ```bash
@@ -381,6 +371,10 @@ For models with `supports_vision: true`:
 - Images are converted to base64 and appended to the model request as a hidden message carrying both a reserved ID prefix and a server-owned metadata marker; Gateway strips that marker from untrusted input, and the middleware requires both identifiers to recognize its own message. The middleware injects inside `wrap_model_call`, so the payload never enters graph state: checkpoints retain only lightweight `viewed_images` metadata, while client-chosen IDs survive. It also sweeps its own message out of every request before rebuilding it, so a payload stranded in an older checkpoint by an interrupted run stops being resent
 
 ## Code Style
+
+Personal RAG stays in `knowledge_base_extension` with the existing SQLite/volume.
+Read its scoped guide and `docs/RAG.md`; parse ready is not index ready, and tests
+must separate controlled embeddings from real service effect/answer acceptance.
 
 Personal file organization uses the source extension `file_organization_extension`
 and existing plugin page/router contracts, not Agent core changes. It requires an

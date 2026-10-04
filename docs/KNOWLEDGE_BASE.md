@@ -1,5 +1,11 @@
 # 第 3 阶段：个人知识库资料管理
 
+第 4 阶段已在**同一资料库、同一 SQLite 与卷**上增加索引、范围检索、问答工具与
+受权限控制的原文引用。下文保留第 3 阶段管理设计和实际验收历史；当前 RAG 配置、
+索引状态、更新/删除与聊天历史策略、24 问评测及未验证项见 [RAG.md](RAG.md)。
+解析 ready 不代表索引 ready；本机已配置真实 Ollama bge-m3 与回答模型授权，
+单片段、跨片段、拒答、真人更新/删除及重启的逐项结果见 RAG 指南，完整人工评分仍待完成。
+
 ## 方案与复用边界
 
 选择轻量扩展（B），只建设一套个人资料库。实际检查的 RAGFlow 客户端
@@ -14,7 +20,9 @@
 投影与宿主 CSRF；独立模块 `backend/knowledge_base_extension/` 提供页面和服务。
 Windows 导入复用第 1/2 阶段服务、操作令牌及原生句柄路径检查。
 知识库更新/删除使用浏览器按钮确认，不使用文件整理的真人私有密钥。
-没有修改 Agent/Gateway/前端核心，没有启用 `knowledge_search`。
+第 3 阶段没有修改核心或启用 RAGFlow `knowledge_search`。第 4 阶段仅修复宿主
+非流式模型调用的聊天投影（保留 token 统计，先校验输出），原因及回归见 RAG 指南。
+第 4 阶段的 personal.knowledge-base 工具使用独立扩展命名空间，通过现有贡献合同接入。
 
 ## 数据与解析
 
@@ -69,8 +77,9 @@ AUTH_DISABLED、模型传 `confirmed=true` 均不能构成确认。
 **从不删除 Windows 原文件。** 清理失败记录 `cleanup_pending/cleanup_failed`，页面可
 查询和重试；重启也会重试。没有撤销删除功能，请核对页面范围。
 持久化 `invalidations(document_id,version_id,reason)` 记录可用版本被替代或删除；
-第 4 阶段可用稳定版本 ID 关联片段/索引，并消费失效记录；本阶段没有片段、向量、
-embedding 请求或 RAG 索引，所有结果 `indexed=false`。
+第 4 阶段已用稳定版本 ID 关联片段/索引并幂等消费失效记录。第 3 阶段导入结果
+`indexed=false` 表示新当前版本尚未索引；现在查询动作另返回明确 index_status，
+document 结果在当前配置索引 ready 时 indexed=true。不得仅看 parse status。
 
 ## 工具和接口
 
@@ -89,8 +98,10 @@ embedding 请求或 RAG 索引，所有结果 `indexed=false`。
 | delete_preview | kind,target | kind=document/knowledge_base；只预览 |
 | cleanup | 无 | 查询并重试副本清理 |
 
-Agent 只注册 `knowledge_bases`、`knowledge_documents`、`knowledge_document`、
-`knowledge_import_local`，宿主可添加扩展命名空间前缀。无搜索、更新、删除或确认工具。
+第 3 阶段注册 `knowledge_bases`、`knowledge_documents`、`knowledge_document`、
+`knowledge_import_local`，宿主可添加扩展命名空间前缀。第 4 阶段再添加
+knowledge_index_status / knowledge_search / knowledge_answer，详见 RAG 指南；仍无更新、
+删除、确认或模型索引工具。
 内容转移字节不会返回给模型；导入结果只返回实际记录、ID、解析状态及错误。
 
 真人入口：`POST /api/personal-knowledge/import`（最多 1 个 multipart 文件；有
@@ -236,7 +247,8 @@ Gateway 再次重启后，真实管理页更新区域已核对密钥框为 0，�
 并保留文件选择和确认更新按钮；未代用户修改现有资料。
 
 已知限制：单用户管理员使用；写入/解析由全库 OS 锁串行化，适合个人少量资料；
-无 OCR、检索、RAG、目录批量扫描、自动同步主机改名、删除撤销或多用户共享。
+无 OCR、目录批量扫描、自动同步主机改名、删除撤销或多用户共享。索引/检索/RAG 已由
+第 4 阶段实现，真实 embedding/问答及最新门禁以 RAG 指南为准。
 相同失败字节也去重，依赖恢复后暂需使用新版本内容或删除失败记录后重新导入；
 尚无总磁盘配额。仅支持同源 localhost 开发入口，生产栈/实际 symlink 尚待补验。
 Gateway 及其既有 LocalSandbox 同属可信运行进程，本阶段不承诺隔离同权限恶意程序；

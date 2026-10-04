@@ -47,10 +47,10 @@ event's metadata/content usage fields. Replay
 generation-count differences never add, remove, or replace canonical messages. The next
 unrelated event, an effective buffer size (committed plus pending events) reaching the
 flush threshold, or an explicit flush commits the staged unit and updates the message
-summary. Once that ordering boundary is crossed, a late usage replay can still update the
-authoritative run token summary, but it cannot mutate the append-only message event,
-caller attribution, fallback state, or tool-call bookkeeping. Closed journals return
-from `on_llm_end` before inspecting the response or touching any run state.
+summary. After commit, late usage may update token totals only, never events, caller,
+fallbacks or tool bookkeeping. Closed journals return before response inspection.
+`deerflow:internal-model-output` host calls retain deduplicated token totals but omit
+raw response/error events and lead-answer effects; only validated tool output is visible.
 
 **Skill history:** `record_skill_usage` saves lead-run snapshots on terminal
 answers for paginated history. See `docs/skill-usage-ui.md`.

@@ -1,0 +1,30 @@
+{
+  "version": "synthetic-redis-v1",
+  "description": "自编合成资料；expected 为必须检索到的文件和证据标记。答案由人工核对，不能用检索命中代替正确性。",
+  "cases": [
+    {"id":"q01","kind":"single","query":"RDB 保存什么？","expected":[["rdb.md","RDB-1"]],"answer":"时间点的数据快照"},
+    {"id":"q02","kind":"single","query":"AOF 恢复时怎么还原数据？","expected":[["aof.md","AOF-1"]],"answer":"重放写操作"},
+    {"id":"q03","kind":"single","query":"SAVE 与 BGSAVE 的区别？","expected":[["rdb.md","RDB-2"]],"answer":"SAVE 同步阻塞，BGSAVE fork 子进程"},
+    {"id":"q04","kind":"single","query":"快照之间发生故障会丢写入吗？","expected":[["rdb.md","RDB-2"]],"answer":"两次快照之间的写入可能丢失"},
+    {"id":"q05","kind":"single","query":"appendfsync 有哪些策略？","expected":[["aof.md","AOF-2"]],"answer":"always、everysec、no"},
+    {"id":"q06","kind":"single","query":"AOF 重写是否保留全部审计历史？","expected":[["aof.md","AOF-3"]],"answer":"不是，重写紧凑的重建日志"},
+    {"id":"q07","kind":"single","query":"TTL 返回 -1 和 -2 分别是什么意思？","expected":[["keys.md","KEY-1"]],"answer":"-1 无过期时间，-2 不存在"},
+    {"id":"q08","kind":"single","query":"哪个 Redis 类型适合排行榜？","expected":[["types.md","TYPE-2"]],"answer":"Sorted Set"},
+    {"id":"q09","kind":"single","query":"SET 和 GET 有什么用途？","expected":[["keys.md","KEY-1"]],"answer":"写入和读取字符串"},
+    {"id":"q10","kind":"single","query":"恢复演练先做什么，再验证什么？","expected":[["operations.md","OPS-1"]],"answer":"隔离测试实例恢复，然后核对关键键"},
+    {"id":"q11","kind":"cross","query":"解释 RDB 与 AOF 的区别并标明来源。","expected":[["rdb.md","RDB-1"],["aof.md","AOF-1"]],"answer":"时间点快照与写操作日志；分别引用"},
+    {"id":"q12","kind":"cross","query":"为什么同时启用 RDB 和 AOF，还要恢复演练？","expected":[["operations.md","OPS-2"],["operations.md","OPS-1"],["rdb.md","RDB-1"],["aof.md","AOF-1"]],"answer":"备份快照、频繁写入持久化及验证可恢复"},
+    {"id":"q13","kind":"cross","query":"RDB 周期快照和 AOF everysec 哪些写入可能丢失？","expected":[["rdb.md","RDB-2"],["aof.md","AOF-2"]],"answer":"快照间写入与最近约一秒；不是绝对保证"},
+    {"id":"q14","kind":"cross","query":"AOF 日志与 Sorted Set 分数是一回事吗？","expected":[["aof.md","AOF-1"],["types.md","TYPE-2"]],"answer":"写操作重放日志与排序数据结构用途不同"},
+    {"id":"q15","kind":"chinese","query":"追加日志刷盘和每秒同步是什么意思？","expected":[["aof.md","AOF-2"]],"answer":"everysec 约每秒同步，可能丢最近约一秒"},
+    {"id":"q16","kind":"chinese","query":"后台保存为何可能有内存压力？","expected":[["rdb.md","RDB-2"]],"answer":"fork 与写时复制"},
+    {"id":"q17","kind":"terms","query":"有序集合和不重复集合怎样选择？","expected":[["types.md","TYPE-1"]],"answer":"Sorted Set 关联分数排序，Set 不重复成员"},
+    {"id":"q18","kind":"conflict","query":"everysec 是否在任何故障下都保证零丢失？请检查来源冲突。","expected":[["aof.md","AOF-2"],["conflict.md","CONFLICT-1"]],"answer":"明确指出冲突，不能保证，引用双方"},
+    {"id":"q19","kind":"no_answer","query":"Redis 的精确商业授权价格是多少？","expected":[],"answer":"资料不足"},
+    {"id":"q20","kind":"no_answer","query":"RDB 的量子压缩实现代码是什么？","expected":[],"answer":"资料不足；相近命中不支持结论"},
+    {"id":"q21","kind":"no_answer","query":"这台服务器运行 AOF 的吞吐量是多少？","expected":[],"answer":"资料没有实测数字"},
+    {"id":"q22","kind":"no_answer","query":"给出 Redis 和 PostgreSQL 在我的硬件上的实测比较。","expected":[],"answer":"资料不足"},
+    {"id":"q23","kind":"update","query":"当前恢复演练间隔是多少天？","expected":[["versioned.txt","VERSION-1"]],"after_update":[["versioned.txt","VERSION-2"]],"answer":"更新前 30 天，更新后 7 天；旧版本不能检索"},
+    {"id":"q24","kind":"delete","query":"删除策略文档后还能查恢复演练的具体间隔吗？","expected":[],"answer":"删除后具体间隔资料不足，旧引用不可用"}
+  ]
+}

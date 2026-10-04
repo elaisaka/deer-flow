@@ -25,6 +25,7 @@ from deerflow_extension_api import (
     ModelUsage,
 )
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langgraph.constants import TAG_NOSTREAM
 
 from deerflow.models import create_chat_model
 
@@ -190,7 +191,13 @@ class HostModelInvoker:
             raise ModelInvocationUnavailable("Model invocation capability has stopped")
         return await model.ainvoke(
             messages,
-            config={"run_name": "extension_model_invocation", "metadata": {"extension_source": self._source, "extension_model_role": role, "extension_purpose": purpose}},
+            # This capability is non-streaming: validation and caller projection
+            # must finish before model output can enter an enclosing Agent chat.
+            config={
+                "run_name": "extension_model_invocation",
+                "tags": [TAG_NOSTREAM, "deerflow:internal-model-output", "middleware:extension_model_invocation"],
+                "metadata": {"extension_source": self._source, "extension_model_role": role, "extension_purpose": purpose},
+            },
         )
 
     async def _invoke(self, request, call):

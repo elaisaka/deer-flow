@@ -58,6 +58,9 @@ memory-zh = ["deerflow-harness[memory-zh]"]
 # the same locked runtime set without promoting those packages to core deps.
 extensions = []
 dev = [
+    # Synthetic knowledge/PDF regression tests need the parser in clean CI.
+    # Production extension still installs its pinned parser in the private volume.
+    "pypdf==6.19.0",
     "blockbuster>=1.5.26,<1.6",
     "hypothesis>=6.100,<7",
     "jsonschema>=4.26.0",
