@@ -5,6 +5,8 @@
 > 本独立仓库基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发，规划个人文件整理、RAG 与学习助手功能，详见[项目范围](docs/PROJECT_SCOPE.md)。第一阶段已通过 Docker 聊天验收授权目录查询、列表和真实新建文件夹，见[本地文件服务指南](docs/LOCAL_FILE_SERVICE.md)。第二阶段沿用该服务，新增确定性整理预览、版本确认、持久化逐项记录及有条件撤销；开发栈已通过真人确认、真实分类、聊天撤销和重启查询，测试限制见[文件整理指南](docs/FILE_ORGANIZATION.md)。RAG、学习功能仍待开发，下文保留上游功能说明。
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](./backend/pyproject.toml)
+
+第三阶段新增[个人知识库资料管理扩展](docs/KNOWLEDGE_BASE.md)：PDF/Markdown/TXT 导入、来源和解析状态、内容去重、稳定文档版本、真人确认更新及删除知识库副本。更新和删除均通过浏览器按钮确认，无需 Windows 密钥；文件整理仍使用独立确认机制。实际验收进度与未验证项目见指南；当前不建立向量或 RAG 索引。
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](./Makefile)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 

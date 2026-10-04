@@ -1,0 +1,10 @@
+plugins:
+  - use: knowledge_base_extension:install
+    enabled: true
+    required: true
+    config:
+      enabled: true
+      data_dir: /var/lib/deerflow-knowledge
+      parser_dependencies: /var/lib/deerflow-knowledge/python
+      credentials_path: /run/deerflow-local-files/approval-client.json
+      origins: [http://localhost:2026, http://127.0.0.1:2026]

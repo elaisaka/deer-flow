@@ -9,7 +9,10 @@ Read `docs/PROJECT_SCOPE.md`, `docs/LOCAL_FILE_SERVICE.md` and
   throughout operations. `FILE_LIST_DIRECTORY` must remain in handle access:
   attributes-only handles do not enforce the rename sharing contract.
 - `server.py` provides finite authenticated roots/list/create-folder and organization
-  endpoints. Never add arbitrary Shell, content download or permanent deletion.
+  endpoints. No arbitrary Shell, arbitrary downloads or permanent host deletion.
+  `imports.py` transfers only selected PDF/MD/TXT (10 MiB), using the same locked
+  ordinary-file handle, two snapshots and private-path/hardlink refusal. The
+  knowledge confirmation endpoint verifies user authority, never deletes files.
 - `organization.py` owns versioned SQLite plans and per-plan process locks. Persist
   intent before every native mutation and reconcile evidence after interruption.
   Never auto-retry terminal plans or infer success from a lost response.

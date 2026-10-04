@@ -101,7 +101,12 @@ Get-Content -Raw "$env:LOCALAPPDATA\DeerFlow\local-files-phase2\approval-code.tx
 | `local_files_cancel_plan` | `plan_id, version`；取消未执行方案并清除确认 |
 | `local_files_undo_plan` | `plan_id`；按执行证据有条件恢复 |
 
-Windows 固定 HTTP 接口为 `POST /v1/organization/{preview,get,list,execute,cancel,undo,confirm}`。全部要求原 Bearer 操作令牌；只有 `confirm` 额外要求 `X-File-Approval-Token`。不提供任意 Shell、文件下载或删除接口。请求正文最大 8192 字节。
+整理的 Windows 固定 HTTP 接口为 `POST /v1/organization/{preview,get,list,execute,cancel,undo,confirm}`。全部要求原 Bearer 操作令牌；只有 `confirm` 额外要求 `X-File-Approval-Token`。不提供任意 Shell、任意下载或原文件删除接口。请求正文最大 8192 字节。
+
+第 3 阶段复用该真人确认密钥，知识库更新/删除仍要求用户亲自输入并点击独立页面；
+新增 `/v1/import/read` 只传输选定的支持格式，`/v1/knowledge/confirm` 只校验本次摘要。
+知识库删除仅清理 Docker 资料副本，Windows 原文件不删除；不影响整理计划版本与撤销。
+新接口需重启 Windows 服务，原私有配置与桥接 9 工具不变，见 [KNOWLEDGE_BASE.md](KNOWLEDGE_BASE.md)。
 
 Gateway 扩展只暴露 `list/get` 两个 BackendAction，无 ModelTool。浏览器 `POST /api/file-organization/confirm` 必须带会话 cookie、Origin、`X-CSRF-Token`，正文仅允许 `plan_id/version/digest/approval_code`；最后一项只转为 Windows 确认请求头，不返回或持久化。
 

@@ -13,6 +13,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
+from .imports import read_selected_file
 from .organization import Organizer
 from .policy import FilePolicy, PolicyError, Settings
 
@@ -38,6 +39,19 @@ def create_app(settings: Settings):
             data = json.loads(body)
             if not isinstance(data, dict):
                 raise PolicyError("invalid_arguments")
+            if request.url.path == "/v1/import/read":
+                if set(data) != {"root_id", "relative_path"} or not all(isinstance(v, str) for v in data.values()):
+                    raise PolicyError("invalid_arguments")
+                return JSONResponse(await anyio.to_thread.run_sync(read_selected_file, policy, data["root_id"], data["relative_path"]))
+            if request.url.path == "/v1/knowledge/confirm":
+                supplied = request.headers.getlist("x-file-approval-token")
+                if not settings.approval_token or len(supplied) != 1 or not hmac.compare_digest(supplied[0].encode(), settings.approval_token.encode()):
+                    return JSONResponse(failure("trusted_confirmation_required"), status_code=403)
+                if set(data) != {"digest", "actor"} or not isinstance(data["digest"], str) or len(data["digest"]) != 64 or not isinstance(data["actor"], str) or not 1 <= len(data["actor"]) <= 128:
+                    raise PolicyError("invalid_arguments")
+                # Verifies a user-supplied authority. No Windows files are deleted,
+                # no reusable approval is issued and no secret is persisted.
+                return JSONResponse({"ok": True, "digest": data["digest"]})
             if request.url.path.startswith("/v1/organization/"):
                 if organizer is None:
                     raise PolicyError("organization_not_configured")
@@ -92,6 +106,8 @@ def create_app(settings: Settings):
             Route("/v1/list-directory", execute, methods=["POST"]),
             Route("/v1/create-folder", execute, methods=["POST"]),
             Route("/v1/organization/{action}", execute, methods=["POST"]),
+            Route("/v1/import/read", execute, methods=["POST"]),
+            Route("/v1/knowledge/confirm", execute, methods=["POST"]),
         ]
     )
 

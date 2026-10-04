@@ -26,6 +26,7 @@ class Settings:
     port: int = 8765
     approval_token: str = ""
     state_dir: Path | None = None
+    private_paths: tuple[Path, ...] = ()
 
     @classmethod
     def load(cls, path: Path) -> Settings:
@@ -60,7 +61,7 @@ class Settings:
             raise ValueError("Organization state directory must be absolute")
         if approval and any(path.absolute().is_relative_to(root) or state_dir.is_relative_to(root) for root in parsed.values()):
             raise ValueError("Human authority and execution ledger must be outside all authorized roots")
-        return cls(parsed, token, host, port, approval, state_dir)
+        return cls(parsed, token, host, port, approval, state_dir, (path.absolute().parent,))
 
 
 if os.name == "nt":
@@ -187,6 +188,7 @@ class FilePolicy:
             "ok": True,
             "execution_host": "windows",
             "roots": roots,
+            "knowledge_import": {"formats": [".pdf", ".md", ".txt"], "max_bytes": 10 * 1024 * 1024, "selected_files_only": True},
             "capabilities": ["list_directory", "create_folder"]
             + (
                 [

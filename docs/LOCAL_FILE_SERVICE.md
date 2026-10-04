@@ -112,7 +112,7 @@ docker compose -p deer-flow --env-file .env -f docker/docker-compose.yaml -f doc
 | `local_files_list_directory` | `root_id`，可选 `relative_path`，空字符串表示根目录 |
 | `local_files_create_folder` | `root_id`，`relative_path`，父目录必须存在 |
 
-DeerFlow 工具名前缀为 `windows-local-files_`。Windows HTTP 接口只有 `GET /v1/roots`、`POST /v1/list-directory`、`POST /v1/create-folder`；每个请求都必须携带 Bearer 令牌，浏览器 Origin 请求被拒绝。没有 Shell、文件内容读取、写文件、删除或移动端点。
+DeerFlow 工具名前缀为 `windows-local-files_`。第 1 阶段 Windows HTTP 接口为 `GET /v1/roots`、`POST /v1/list-directory`、`POST /v1/create-folder`；每个请求都必须携带 Bearer 令牌，浏览器 Origin 请求被拒绝。后续接口见文件整理与知识库指南，始终没有任意 Shell、任意下载或原文件删除接口。
 
 成功示例（路径来自 Windows 句柄查询）：
 
@@ -249,6 +249,12 @@ if ($taskProcess.CommandLine -match 'services\.local_file_service\.server') {
 ## 限制和后续
 
 以上记录为第 1 阶段验收。第 2 阶段已扩展同一服务，新增整理预览、执行记录、真人版本确认及有条件撤销，见 [FILE_ORGANIZATION.md](FILE_ORGANIZATION.md)。原三个工具兼容；继续使用新生成的 Windows 私有运行配置和额外 Compose overlay，不建立第二个文件服务。
+
+第 3 阶段增加有限 `POST /v1/import/read`：只读用户选定的 PDF/MD/TXT（10 MiB），
+原生句柄锁定、前后快照和摘要校验，不扫描主机、不读项目或私有服务目录、不开放任意下载。
+`/v1/knowledge/confirm` 仅验证现有真人私有密钥，不删除 Windows 文件。
+新增端点后需重启 Windows 服务，授权根与令牌不变；配置、限制和测试见
+[KNOWLEDGE_BASE.md](KNOWLEDGE_BASE.md)。桥接原有目录与整理工具保持兼容。
 
 - 单用户、Windows 本机服务；不提供多账户权限划分、TLS、公网访问、系统服务安装或开机自动启动。
 - 全部重解析点保守拒绝，即使链接目标仍在授权目录内。根目录及祖先需要当前账户的目录列举权限，共享冲突时拒绝操作。

@@ -4,6 +4,9 @@ Backend tests must preserve the runtime invariants they exercise without changin
 
 ## Windows file organization
 
+Knowledge management regression guidance: `backend/knowledge_base_extension/AGENTS.md`.
+Use synthetic PDFs and temporary stores; never act for the user at confirmation.
+
 `test_file_organization.py` uses synthetic temporary roots and actual native file
 handles. Run this tier with the independent Windows service environment and
 `--noconftest`; Linux explicitly skips it. Keep junction cleanup nonrecursive.

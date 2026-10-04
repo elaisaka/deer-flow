@@ -1,0 +1,8 @@
+# Append to the existing stack and phase-one/two overlays; no host root mount.
+services:
+  gateway:
+    volumes:
+      - ../backend/knowledge_base_extension:/app/backend/knowledge_base_extension:ro
+      - knowledge-base-data:/var/lib/deerflow-knowledge
+volumes:
+  knowledge-base-data:
