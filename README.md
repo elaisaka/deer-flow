@@ -1,6 +1,10 @@
 # 🦌 DeerFlow - 2.0
 
-English | [中文](./README_zh.md) | [日本語](./README_ja.md) | [Français](./README_fr.md) | [Русский](./README_ru.md)
+English | [中文](./README_zh.md)
+
+> This independent repository is based on [DeerFlow](https://github.com/bytedance/deer-flow). Personal file organization, RAG, and learning-assistant features are planned; see [project scope](docs/PROJECT_SCOPE.md). The remaining README describes upstream capabilities.
+
+Phase one adds an authenticated Windows local file service with authorized roots, directory listing, and verified folder creation from the existing Docker chat. See [setup, tests, and limitations](docs/LOCAL_FILE_SERVICE.md). RAG, learning features, and bulk file organization remain planned.
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](./backend/pyproject.toml)
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](./Makefile)

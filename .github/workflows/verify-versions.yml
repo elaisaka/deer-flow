@@ -1,9 +1,8 @@
 name: Verify Versions
 
 # Reusable workflow: checks that every project version source agrees with the
-# git tag that triggered the release. Called by chart.yaml and container.yaml
-# on v* tags so a forgotten version bump blocks the entire release (container
-# images + chart), not just the chart.
+# supplied version. Retained for future callers in this independent repository;
+# upstream publishing workflows have been removed.
 #
 # Sources verified: deploy/helm/deer-flow/Chart.yaml (version + appVersion),
 # backend/pyproject.toml, frontend/package.json. Logic lives in

@@ -66,6 +66,7 @@ deer-flow/
 ├── contracts/                      # Cross-component JSON contracts (e.g. subagent status, skill review)
 ├── examples/                       # Extension examples: deerflow-extension-{example,bookmarks}
 ├── scripts/                        # Root orchestration scripts invoked by the Makefile (check, configure, doctor, support_bundle, serve, nginx, docker, deploy, setup_wizard)
+├── services/local_file_service/     # Independent Windows file execution boundary + Docker stdio MCP bridge
 ├── tests/                          # Root-level tests (currently tests/skills/ — public skill tests)
 └── docs/                           # Cross-cutting docs, plans, and design notes
 ```
@@ -213,8 +214,10 @@ cd frontend && pnpm rstest run <pattern>     # e.g. pnpm rstest run my-component
 - Backend work → **[backend/AGENTS.md](backend/AGENTS.md)**
 - Frontend work → **[frontend/AGENTS.md](frontend/AGENTS.md)**
 - Setup & install → **[Install.md](Install.md)**, **[CONTRIBUTING.md](CONTRIBUTING.md)**
-- Project overview & usage → **[README.md](README.md)** (translations: `README_zh.md`,
-  `README_ja.md`, `README_fr.md`, `README_ru.md`)
+- Project overview & usage → **[README.md](README.md)** (translation: `README_zh.md`)
+- Independent project scope → **[docs/PROJECT_SCOPE.md](docs/PROJECT_SCOPE.md)**.
+- Windows local file service → **[docs/LOCAL_FILE_SERVICE.md](docs/LOCAL_FILE_SERVICE.md)**;
+  independent code and execution-boundary guidance in **[services/local_file_service/AGENTS.md](services/local_file_service/AGENTS.md)**.
 - Security policy → **[SECURITY.md](SECURITY.md)**
 - Changes → **[CHANGELOG.md](CHANGELOG.md)**
 - Cutting a release → **[RELEASING.md](RELEASING.md)**
@@ -237,8 +240,8 @@ These apply repo-wide; module guides own the module-specific detail.
 - **Version sources must stay in lockstep** — a release version must match identically in
   `backend/pyproject.toml`, `frontend/package.json`, and `deploy/helm/deer-flow/Chart.yaml`
   (`version` + `appVersion`), and `backend/uv.lock` must record the same version for the root
-  package (uv stores its PEP 440 form, e.g. `2.1.0rc0`). Pushing a `v*` git tag triggers CI
-  that runs `scripts/verify_versions.sh` and **blocks all publishing** if any source drifts.
+  package (uv stores its PEP 440 form, e.g. `2.1.0rc0`). This independent repository has
+  removed upstream publishing workflows; pushing a `v*` tag does not publish artifacts.
   Before bumping a version, run `scripts/bump_version.sh <ver>` (aligns the four fields and
   refreshes `backend/uv.lock` at once — it needs `uv` on `PATH`) and
   `scripts/verify_versions.sh <ver>` to catch drift early. See [RELEASING.md](RELEASING.md).

@@ -1,0 +1,5 @@
+# Add to the existing dev/production compose invocation; no new published Docker port.
+services:
+  gateway:
+    volumes:
+      - ../services:/opt/deerflow-local-files/services:ro
