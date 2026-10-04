@@ -1,0 +1,11 @@
+.organization-plans { padding: 1.5rem; max-width: 100%; box-sizing: border-box; }
+.organization-plans button { margin: .4rem; padding: .5rem .8rem; border: 1px solid #8886; border-radius: .4rem; cursor: pointer; max-width: calc(100% - .8rem); overflow-wrap: anywhere; }
+.organization-plans button:disabled { opacity: .5; cursor: wait; }
+.organization-plans input { padding: .5rem; border: 1px solid #8886; border-radius: .4rem; width: min(20rem, 100%); min-width: 0; box-sizing: border-box; }
+.organization-plans h3 { overflow-wrap: anywhere; }
+.organization-plans .table-wrap { overflow-x: auto; max-width: 100%; }
+.organization-plans table { width: 100%; min-width: 50rem; border-collapse: collapse; font-size: .875rem; table-layout: fixed; }
+.organization-plans th, .organization-plans td { text-align: left; padding: .6rem; border: 1px solid #8886; overflow-wrap: anywhere; }
+.organization-plans pre { white-space: pre-wrap; padding: .7rem; background: #8881; }
+.organization-plans p { overflow-wrap: anywhere; margin: .7rem 0; }
+.organization-plans [role=alert] { color: #dc2626; }

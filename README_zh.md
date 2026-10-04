@@ -2,7 +2,7 @@
 
 [English](./README.md) | 中文
 
-> 本独立仓库基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发，规划个人文件整理、RAG 与学习助手功能，详见[项目范围](docs/PROJECT_SCOPE.md)。第一阶段已接入带身份校验的 Windows 本地文件服务，支持授权目录查询、目录列表和经过验证的新建文件夹，并通过现有 Docker 聊天真实验收。配置、启动、测试和限制见[本地文件服务指南](docs/LOCAL_FILE_SERVICE.md)。RAG、学习及批量文件整理仍待开发，下文保留上游功能说明。
+> 本独立仓库基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发，规划个人文件整理、RAG 与学习助手功能，详见[项目范围](docs/PROJECT_SCOPE.md)。第一阶段已通过 Docker 聊天验收授权目录查询、列表和真实新建文件夹，见[本地文件服务指南](docs/LOCAL_FILE_SERVICE.md)。第二阶段沿用该服务，新增确定性整理预览、版本确认、持久化逐项记录及有条件撤销；开发栈已通过真人确认、真实分类、聊天撤销和重启查询，测试限制见[文件整理指南](docs/FILE_ORGANIZATION.md)。RAG、学习功能仍待开发，下文保留上游功能说明。
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](./backend/pyproject.toml)
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](./Makefile)

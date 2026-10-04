@@ -209,6 +209,8 @@ cd frontend && pnpm rstest run <pattern>     # e.g. pnpm rstest run my-component
 - Independent project scope → **[docs/PROJECT_SCOPE.md](docs/PROJECT_SCOPE.md)**.
 - Windows local file service → **[docs/LOCAL_FILE_SERVICE.md](docs/LOCAL_FILE_SERVICE.md)**;
   independent code and execution-boundary guidance in **[services/local_file_service/AGENTS.md](services/local_file_service/AGENTS.md)**.
+- Phase-two file organization → **[docs/FILE_ORGANIZATION.md](docs/FILE_ORGANIZATION.md)**;
+  confirmation UI/router is a source extension in `backend/file_organization_extension/`.
 - Security policy → **[SECURITY.md](SECURITY.md)**
 - Changes → **[CHANGELOG.md](CHANGELOG.md)**
 - Cutting a release → **[RELEASING.md](RELEASING.md)**

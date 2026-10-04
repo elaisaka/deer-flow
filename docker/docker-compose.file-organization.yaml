@@ -1,0 +1,7 @@
+# Add after the original Compose file and docker-compose.local-files.yaml.
+# Only operation credentials enter Gateway. Human approval stays on Windows.
+services:
+  gateway:
+    volumes:
+      - ../backend/file_organization_extension:/app/backend/file_organization_extension:ro
+      - ${FILE_ORGANIZATION_PRIVATE_DIR:?Set FILE_ORGANIZATION_PRIVATE_DIR}/approval-client.json:/run/deerflow-local-files/approval-client.json:ro

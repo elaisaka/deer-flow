@@ -20,12 +20,23 @@ def mcp_entry(settings: Settings) -> dict:
         },
         "tool_name_prefix": True,
         "session_init_timeout": 20,
-        "tool_call_timeout": 15,
+        "tool_call_timeout": 180,
         "description": "Windows 授权目录工具；调用 get_roots 获取实际目录，仅以 verified=true 的执行结果报告成功。服务断开时说明连接错误，不猜测云端或桌面能力。",
         "routing": {
             "mode": "prefer",
             "priority": 100,
-            "keywords": ["授权目录", "新建文件夹", "Windows", "test-folder", "桌面"],
+            "keywords": [
+                "授权目录",
+                "新建文件夹",
+                "Windows",
+                "test-folder",
+                "桌面",
+                "文件整理",
+                "分类",
+                "重命名",
+                "预览",
+                "撤销",
+            ],
         },
     }
 

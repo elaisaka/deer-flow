@@ -1,0 +1,10 @@
+{
+  "host": "127.0.0.1",
+  "port": 8765,
+  "token": "REPLACE_WITH_EXISTING_OPERATION_TOKEN",
+  "roots": {"study": "D:\\AuthorizedStudy"},
+  "organization": {
+    "approval_token": "REPLACE_WITH_DISTINCT_RANDOM_APPROVAL_TOKEN",
+    "state_dir": "C:\\Users\\YOUR_USER\\AppData\\Local\\DeerFlow\\local-files-phase2\\organization"
+  }
+}

@@ -19,7 +19,11 @@ class FileServiceClient:
                 "Configure the local file service token; no operation was executed.",
             )
         try:
-            async with httpx.AsyncClient(timeout=10, trust_env=False, transport=self.transport) as client:
+            async with httpx.AsyncClient(
+                timeout=120 if operation.startswith("organization/") else 10,
+                trust_env=False,
+                transport=self.transport,
+            ) as client:
                 response = await client.request(
                     "GET" if arguments is None else "POST",
                     f"{self.url}/v1/{operation}",
@@ -41,7 +45,8 @@ class FileServiceClient:
         except httpx.RequestError:
             return failure(
                 "service_unavailable",
-                "Cannot connect to the Windows local file service. Start it and check Docker host connectivity/firewall. Execution outcome is unverified; retry the same folder safely after reconnecting.",
+                "Cannot connect to the Windows local file service. Start it and check Docker host connectivity/firewall. Execution outcome is unverified. "
+                "For organization, query the persisted plan before retrying; never assume no files moved.",
             )
         except ValueError:
             return failure(
@@ -78,6 +83,61 @@ def build_mcp(client: FileServiceClient) -> FastMCP:
         never claim creation or run sandbox Shell instead.
         """
         return await client.call("create-folder", {"root_id": root_id, "relative_path": relative_path})
+
+    @server.tool()
+    async def local_files_preview_organization(
+        root_id: str,
+        rule: dict,
+        directory: str = "",
+        files: list[str] | None = None,
+        plan_id: str | None = None,
+        expected_version: int | None = None,
+    ) -> dict:
+        """Preview Windows file organization WITHOUT changing user files. Use an authorized root and existing relative directory; files are explicit basenames or all ordinary files, nonrecursive, at most 100.
+
+        Rules: {kind:'classify',mapping:{'.txt':'Text','.md':'Notes','.pdf':'PDF'}} uses single subdirectories;
+        {kind:'rename',prefix:'study-',suffix:'-note',numbering:{start:1,width:2}} preserves extensions.
+        Optional omit_stem:true replaces the stem. Items are sorted by filename, case insensitive.
+        To revise provide plan_id and expected_version. Show every source/target, conflicts, version and review_url.
+        WAIT for the HUMAN to click the confirmation button at review_url. Text approval or confirmed=true cannot authorize execution.
+        Never call a confirmation HTTP endpoint, read private approval credentials, or use shell to bypass confirmation.
+        """
+        payload = {"root_id": root_id, "directory": directory, "rule": rule}
+        if files is not None:
+            payload["files"] = files
+        if plan_id is not None:
+            payload.update(plan_id=plan_id, expected_version=expected_version)
+        return await client.call("organization/preview", payload)
+
+    @server.tool()
+    async def local_files_get_plan(plan_id: str) -> dict:
+        """Read persistent Windows plan, version, exact paths, confirmation and per-item execution/undo records. Interrupted intents are reconciled from actual file evidence; unverified outcomes are not success."""
+        return await client.call("organization/get", {"plan_id": plan_id})
+
+    @server.tool()
+    async def local_files_list_plans() -> dict:
+        """List the most recent 100 Windows file organization plans. Single-user local service; contains statuses and IDs, no file content."""
+        return await client.call("organization/list", {})
+
+    @server.tool()
+    async def local_files_execute_plan(plan_id: str, version: int) -> dict:
+        """Execute ONLY the exact Windows plan version already confirmed by the human UI.
+        Model invocation/text cannot confirm. Prechecks prevent changed sources and conflicts; partial completion is possible.
+        Repeated requests reconcile evidence and never rerun terminal plans. The human confirmation button already executes; query its record afterward.
+        """
+        return await client.call("organization/execute", {"plan_id": plan_id, "version": version})
+
+    @server.tool()
+    async def local_files_cancel_plan(plan_id: str, version: int) -> dict:
+        """Cancel an awaiting/confirmed Windows plan version and invalidate its confirmation. No files are changed. Executing/terminal plans cannot be cancelled."""
+        return await client.call("organization/cancel", {"plan_id": plan_id, "version": version})
+
+    @server.tool()
+    async def local_files_undo_plan(plan_id: str) -> dict:
+        """When the USER requests undo, restore only evidenced successful Windows moves/renames from this plan.
+        Recheck identity/content, scope and conflicts; never overwrite. Return every undo result; partial_undo means some files were not restored.
+        """
+        return await client.call("organization/undo", {"plan_id": plan_id})
 
     return server
 

@@ -248,6 +248,8 @@ if ($taskProcess.CommandLine -match 'services\.local_file_service\.server') {
 
 ## 限制和后续
 
+以上记录为第 1 阶段验收。第 2 阶段已扩展同一服务，新增整理预览、执行记录、真人版本确认及有条件撤销，见 [FILE_ORGANIZATION.md](FILE_ORGANIZATION.md)。原三个工具兼容；继续使用新生成的 Windows 私有运行配置和额外 Compose overlay，不建立第二个文件服务。
+
 - 单用户、Windows 本机服务；不提供多账户权限划分、TLS、公网访问、系统服务安装或开机自动启动。
 - 全部重解析点保守拒绝，即使链接目标仍在授权目录内。根目录及祖先需要当前账户的目录列举权限，共享冲突时拒绝操作。
 - 只创建一个末级目录；父目录必须已存在。没有批量重命名、分类移动、撤销、RAG、知识库、学习计划或桌面自动化。

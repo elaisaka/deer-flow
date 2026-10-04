@@ -24,6 +24,8 @@ class Settings:
     token: str
     host: str = "127.0.0.1"
     port: int = 8765
+    approval_token: str = ""
+    state_dir: Path | None = None
 
     @classmethod
     def load(cls, path: Path) -> Settings:
@@ -47,7 +49,18 @@ class Settings:
         host, port = data.get("host", "127.0.0.1"), data.get("port", 8765)
         if host not in {"127.0.0.1", "0.0.0.0"} or type(port) is not int or not 1024 <= port <= 65535:
             raise ValueError("Invalid listen address/port")
-        return cls(parsed, token, host, port)
+        organization = data.get("organization", {})
+        if not isinstance(organization, dict):
+            raise ValueError("Invalid organization settings")
+        approval = organization.get("approval_token", "")
+        if approval and (not isinstance(approval, str) or approval.startswith("REPLACE_") or not re.fullmatch(r"[A-Za-z0-9_-]{32,256}", approval) or approval == token):
+            raise ValueError("Approval requires a separate random token")
+        state_dir = Path(organization.get("state_dir", str(path.absolute().parent / "organization")))
+        if not state_dir.is_absolute():
+            raise ValueError("Organization state directory must be absolute")
+        if approval and any(path.absolute().is_relative_to(root) or state_dir.is_relative_to(root) for root in parsed.values()):
+            raise ValueError("Human authority and execution ledger must be outside all authorized roots")
+        return cls(parsed, token, host, port, approval, state_dir)
 
 
 if os.name == "nt":
@@ -84,14 +97,16 @@ if os.name == "nt":
 
 
 @contextmanager
-def locked_directory(path: Path):
+def locked_directory(path: Path, *, allow_file_moves=False):
     if os.name != "nt":
         raise PolicyError("windows_required")
     # OPEN_REPARSE_POINT: inspect the link itself. BACKUP_SEMANTICS: open directories.
     # Share read only: prevent rename/delete AND writable reparse-point handles.
     # FILE_LIST_DIRECTORY participates in Windows sharing checks; attributes-only
     # handles do not protect against rename even with FILE_SHARE_DELETE omitted.
-    handle = kernel.CreateFileW(str(path), 0x81, 1, None, 3, 0x02200000, None)
+    # Organization alone uses write sharing with handle-relative native renames.
+    # DELETE sharing stays disabled. Full-path mutations must retain the default.
+    handle = kernel.CreateFileW(str(path), 0x81, 3 if allow_file_moves else 1, None, 3, 0x02200000, None)
     if handle == ctypes.c_void_p(-1).value:
         error = ctypes.get_last_error()
         raise PolicyError({2: "not_found", 3: "not_found", 32: "directory_busy"}.get(error, "access_denied"))
@@ -141,24 +156,24 @@ class FilePolicy:
                 self.identities[name] = path.stat().st_ino
 
     @contextmanager
-    def _directory(self, root_id: str, parts: tuple[str, ...]):
+    def _directory(self, root_id: str, parts: tuple[str, ...], *, allow_file_moves=False):
         if root_id not in self.settings.roots:
             raise PolicyError("unauthorized_root")
         root = self.settings.roots[root_id]
         with ExitStack() as stack:
             # Walk from the drive root, preventing an authorized path's ancestor from redirecting it.
             current = Path(root.anchor)
-            actual = stack.enter_context(locked_directory(current))
+            actual = stack.enter_context(locked_directory(current, allow_file_moves=allow_file_moves))
             for part in root.parts[1:]:
                 current /= part
-                actual = stack.enter_context(locked_directory(current))
+                actual = stack.enter_context(locked_directory(current, allow_file_moves=allow_file_moves))
             if actual != root:
                 raise PolicyError("root_path_changed")
             if root_id in self.identities and actual.stat().st_ino != self.identities[root_id]:
                 raise PolicyError("root_identity_changed")
             for part in parts:
                 current /= part
-                actual = stack.enter_context(locked_directory(current))
+                actual = stack.enter_context(locked_directory(current, allow_file_moves=allow_file_moves))
                 if not actual.is_relative_to(root):
                     raise PolicyError("outside_authorized_root")
             yield actual
@@ -172,7 +187,17 @@ class FilePolicy:
             "ok": True,
             "execution_host": "windows",
             "roots": roots,
-            "capabilities": ["list_directory", "create_folder"],
+            "capabilities": ["list_directory", "create_folder"]
+            + (
+                [
+                    "organization_preview",
+                    "organization_execute_after_human_confirmation",
+                    "organization_records",
+                    "organization_undo",
+                ]
+                if self.settings.approval_token
+                else []
+            ),
         }
 
     def list_directory(self, root_id: str, relative_path: str = "") -> dict:

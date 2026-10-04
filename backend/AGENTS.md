@@ -382,6 +382,12 @@ For models with `supports_vision: true`:
 
 ## Code Style
 
+Personal file organization uses the source extension `file_organization_extension`
+and existing plugin page/router contracts, not Agent core changes. It requires an
+administrator browser session plus a human-entered Windows-only confirmation
+credential; do not mount that credential into a LocalSandbox-capable Gateway.
+See `docs/FILE_ORGANIZATION.md` at the repository root for setup and acceptance.
+
 - Uses `ruff` for linting and formatting
 - Line length: 240 characters
 - Python 3.12+ with type hints

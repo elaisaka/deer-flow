@@ -2,6 +2,15 @@
 
 Backend tests must preserve the runtime invariants they exercise without changing production execution topology.
 
+## Windows file organization
+
+`test_file_organization.py` uses synthetic temporary roots and actual native file
+handles. Run this tier with the independent Windows service environment and
+`--noconftest`; Linux explicitly skips it. Keep junction cleanup nonrecursive.
+`test_file_organization_extension.py` runs with normal backend fixtures and checks
+browser identity, explicit origins and separate human authority. Model invocation
+is never confirmation; live acceptance must wait for the user's button click.
+
 The local sandbox's UTF-8 subprocess guard inspects each text-mode call with
 `ast`, checking both `encoding` and `errors`; module-wide literal counts can
 hide unpinned calls behind unrelated settings.

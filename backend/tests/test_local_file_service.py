@@ -37,11 +37,31 @@ def test_create_retry_and_conflict(tmp_path):
         policy.create_folder("study", "file")
     assert (tmp_path / "file").read_text(encoding="utf-8") == "preserve"
     assert policy.roots()["roots"][0]["actual_path"] == str(tmp_path.resolve())
-    assert {e["name"] for e in policy.list_directory("study")["entries"]} == {"file", "test-folder"}
+    assert {e["name"] for e in policy.list_directory("study")["entries"]} == {
+        "file",
+        "test-folder",
+    }
 
 
 @windows
-@pytest.mark.parametrize("path", ["../escape", "a/../../escape", "C:\\escape", "\\escape", "C:escape", "\\\\server\\share", "folder.", "folder ", "NUL", "COM1.txt", "a:stream", "a//b", "a/<b>"])
+@pytest.mark.parametrize(
+    "path",
+    [
+        "../escape",
+        "a/../../escape",
+        "C:\\escape",
+        "\\escape",
+        "C:escape",
+        "\\\\server\\share",
+        "folder.",
+        "folder ",
+        "NUL",
+        "COM1.txt",
+        "a:stream",
+        "a//b",
+        "a/<b>",
+    ],
+)
 def test_reject_paths(tmp_path, path):
     with pytest.raises(PolicyError):
         FilePolicy(settings(tmp_path)).create_folder("study", path)
@@ -99,7 +119,10 @@ def test_directory_handles_prevent_rename(tmp_path):
 
 def test_config_fail_closed(tmp_path):
     config = tmp_path / "config.json"
-    config.write_text(json.dumps({"roots": {"study": str(tmp_path)}, "token": "short"}), encoding="utf-8")
+    config.write_text(
+        json.dumps({"roots": {"study": str(tmp_path)}, "token": "short"}),
+        encoding="utf-8",
+    )
     with pytest.raises(ValueError):
         Settings.load(config)
     config.write_text(json.dumps({"roots": {"study": "relative"}, "token": TOKEN}), encoding="utf-8")
@@ -111,7 +134,11 @@ def test_config_fail_closed(tmp_path):
 def test_http_auth_finite_routes_and_real_creation(tmp_path):
     with TestClient(create_app(settings(tmp_path))) as client:
         payload = {"root_id": "study", "relative_path": "real"}
-        for headers in ({}, {"Authorization": "Bearer wrong"}, {"Authorization": f"Bearer {TOKEN}", "Origin": "https://evil.example"}):
+        for headers in (
+            {},
+            {"Authorization": "Bearer wrong"},
+            {"Authorization": f"Bearer {TOKEN}", "Origin": "https://evil.example"},
+        ):
             assert client.post("/v1/create-folder", json=payload, headers=headers).status_code in (401, 403)
         assert not (tmp_path / "real").exists()
         client.headers["Authorization"] = f"Bearer {TOKEN}"
@@ -128,17 +155,31 @@ def test_bridge_unavailable_and_bad_auth():
     async def unavailable(request):
         raise httpx.ConnectError("synthetic offline", request=request)
 
-    bridge = FileServiceClient("http://host.docker.internal:8765", TOKEN, transport=httpx.MockTransport(unavailable))
+    bridge = FileServiceClient(
+        "http://host.docker.internal:8765",
+        TOKEN,
+        transport=httpx.MockTransport(unavailable),
+    )
     result = asyncio.run(bridge.call("create-folder", {"root_id": "study", "relative_path": "x"}))
     assert result["error"]["code"] == "service_unavailable" and not result["ok"]
-    bridge = FileServiceClient("http://host.docker.internal:8765", TOKEN, transport=httpx.MockTransport(lambda request: httpx.Response(401)))
+    bridge = FileServiceClient(
+        "http://host.docker.internal:8765",
+        TOKEN,
+        transport=httpx.MockTransport(lambda request: httpx.Response(401)),
+    )
     assert asyncio.run(bridge.call("roots"))["error"]["code"] == "authentication_failed"
 
 
 def test_bridge_discovery_offline():
     server = build_mcp(FileServiceClient("http://host.docker.internal:8765", TOKEN))
     tools = asyncio.run(server.list_tools())
-    assert {t.name for t in tools} == {"local_files_get_roots", "local_files_list_directory", "local_files_create_folder"}
+    names = {t.name for t in tools}
+    assert {
+        "local_files_get_roots",
+        "local_files_list_directory",
+        "local_files_create_folder",
+    } <= names
+    assert len(names) == 9 and not any("confirm" in name for name in names)
     assert all("Windows" in t.description for t in tools)
 
 
@@ -172,13 +213,14 @@ def test_root_identity_change(tmp_path):
         policy.create_folder("study", "escape")
 
 
-def test_bridge_connection_refused():
+@pytest.mark.parametrize("operation,arguments", [("roots", None), ("organization/get", {"plan_id": "a" * 32})])
+def test_bridge_connection_refused(operation, arguments):
     import socket
 
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
-        result = asyncio.run(FileServiceClient(f"http://127.0.0.1:{port}", TOKEN).call("roots"))
+        result = asyncio.run(FileServiceClient(f"http://127.0.0.1:{port}", TOKEN).call(operation, arguments))
     assert not result["ok"] and result["error"]["code"] == "service_unavailable"
 
 
