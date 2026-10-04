@@ -12,11 +12,8 @@ This **monorepo orientation layer** maps the repo. For module details, read its 
 
 ## What is DeerFlow
 
-DeerFlow is a LangGraph-based AI super-agent system with a full-stack architecture. The
-backend runs a "super agent" with sandboxed execution, persistent memory, subagent
-delegation, and extensible tools (built-in, MCP, community), all per-thread isolated. The
-frontend is a Next.js chat UI. External IM platforms (Feishu, Slack, Telegram, Discord,
-DingTalk) bridge into the same agent through the Gateway.
+DeerFlow combines a LangGraph agent backend and Next.js frontend, with per-thread
+sandboxes, memory, subagents, tools and IM channels through the Gateway.
 
 ## Service Topology
 
@@ -29,21 +26,15 @@ A single `make dev` / Docker stack runs four cooperating services:
 | **Frontend**    | `3000` | Next.js web interface                                               |
 | **Provisioner** | `8002` | Optional — only when sandbox is configured for provisioner/K8s mode |
 
-Nginx is the single public entry: it proxies `/api/*` to the Gateway, rewriting
-`/api/langgraph/*` onto the Gateway's native routes, and serves the frontend — see
-[backend/AGENTS.md](backend/AGENTS.md) for the runtime and router detail. It compresses
-HTML and configured textual assets, deliberately leaving SSE, fonts, images, audio, and
-video uncompressed at the proxy layer.
+Nginx serves the frontend and proxies `/api/*` to Gateway, rewriting `/api/langgraph/*`
+to native routes. See [backend/AGENTS.md](backend/AGENTS.md). Compress textual assets,
+but leave SSE and binary media uncompressed.
 
-Both compose files publish that entry as `"${BIND_HOST:-127.0.0.1}:${PORT:-2026}:2026"`
-— **loopback by default**, matching the README's documented deployment model; a bare
-`"${PORT}:2026"` binds `0.0.0.0`, which does not. The root `PORT` value is Docker ingress
-configuration only; local orchestration pins Next.js to `3000` so loading `.env` cannot
-make `make dev` wait on the wrong port. Nginx listening `default_server` on IPv4+IPv6 and
-the Gateway binding `0.0.0.0:8001` are container-internal on purpose: the published nginx
-port is the entire external surface. Any new published port needs an explicit bind
-address; `backend/tests/test_compose_default_bind_host.py` pins this for every service in
-both compose files.
+Compose ingress must default to `"${BIND_HOST:-127.0.0.1}:${PORT:-2026}:2026"`.
+Root `PORT` controls Docker ingress only; local Next.js stays on `3000`.
+Internal Nginx IPv4/IPv6 listeners and Gateway `0.0.0.0:8001` do not expose host ports.
+Any added published port needs an explicit bind address; verify with
+`backend/tests/test_compose_default_bind_host.py`.
 
 ## Repository Map
 
