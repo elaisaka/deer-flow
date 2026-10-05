@@ -422,6 +422,8 @@ No online settings write API is added. `plugin_tools.py` joins normal tool assem
 the run's extension snapshot; task delegation passes that snapshot explicitly. Browser
 public-field projection is an allowlist. Package code is trusted, not sandboxed. See
 `docs/full-stack-plugins.md` and the independently packaged bookmark example.
+ToolContext projects optional run_id and bounded original human user_text from
+host state, excluding upload expansions; neither is a model argument.
 
 Full Agent run control is an optional `deerflow_extension_api.AgentRuns` handle
 on action/tool contexts and the request resolver. Gateway owns principal binding,

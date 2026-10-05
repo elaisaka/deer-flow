@@ -49,13 +49,14 @@ async def test_real_tool_node_binds_identity_and_deployment_policy(installed):
         return (
             await agent.ainvoke(
                 {"messages": [AIMessage(content="", tool_calls=[{"id": "c", "name": tool.name, "args": args}])]},
-                context={"user_id": "trusted-user", "thread_id": "thread-a"},
+                context={"user_id": "trusted-user", "thread_id": "thread-a", "run_id": "host-run-a"},
             )
         )["messages"][-1]
 
     result = await invoke({"query": "hello"})
     assert json.loads(result.content) == {"query": "hello", "user": "trusted-user"}
     assert calls[0].thread_id == "thread-a"
+    assert calls[0].run_id == "host-run-a"
     with pytest.raises(TypeError):
         calls[0].settings["enabled"] = False
     assert (await invoke({"query": "x", "user_id": "victim"})).status == "error"

@@ -1,0 +1,173 @@
+.learning {
+  color: var(--foreground, #202329);
+  background: var(--background, #fff);
+  font-family: inherit;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 1400px;
+  margin: auto;
+}
+.learning * {
+  box-sizing: border-box;
+}
+.learning [hidden] {
+  display: none !important;
+}
+.learning header {
+  padding-bottom: 24px;
+}
+.learning h1 {
+  font-size: 28px;
+  font-weight: 650;
+  margin: 0;
+}
+.learning h2 {
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+.learning h3 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.learning h4 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+.learning p {
+  max-width: 75ch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+}
+.learning .layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 32px;
+}
+.learning aside {
+  border-right: 1px solid var(--border, #d9dee5);
+  padding-right: 20px;
+}
+.learning aside button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 8px;
+}
+.learning main {
+  min-width: 0;
+}
+.learning button {
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+  background: var(--secondary, #eef2f7);
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: 6px;
+  padding: 7px 12px;
+  margin: 4px 4px 4px 0;
+}
+.learning button:hover {
+  background: var(--accent, #e3eaf3);
+}
+.learning button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.learning button[aria-current="true"] {
+  border-color: var(--primary, #2465a8);
+  font-weight: 650;
+}
+.learning :is(button, input, textarea, select, a):focus-visible {
+  outline: 2px solid var(--ring, #2465a8);
+  outline-offset: 3px;
+}
+.learning .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.learning label {
+  display: block;
+  margin: 12px 0;
+  font-size: 14px;
+}
+.learning :is(input:not([type="checkbox"]), textarea, select) {
+  display: block;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  background: var(--background, #fff);
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: 5px;
+  padding: 9px;
+  margin-top: 5px;
+}
+.learning input[type="checkbox"] {
+  margin-right: 8px;
+}
+.learning textarea {
+  min-height: 85px;
+  resize: vertical;
+}
+.learning form {
+  max-width: 700px;
+}
+.learning fieldset {
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: 6px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.learning .chapters {
+  padding-left: 24px;
+}
+.learning .chapters li {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border, #d9dee5);
+}
+.learning .warning,
+.learning [role="alert"] {
+  border-left: 3px solid var(--primary, #2465a8);
+  padding: 8px 12px;
+  background: var(--muted, #f1f4f7);
+}
+.learning .muted,
+.learning .source,
+.learning .retention {
+  font-size: 13px;
+  color: var(--muted-foreground, #5b6573);
+}
+.learning .source a {
+  color: var(--primary, #2465a8);
+  text-decoration: underline;
+}
+.learning .source span {
+  overflow-wrap: anywhere;
+}
+.learning :is(.lesson, .history) {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid var(--border, #d9dee5);
+}
+.learning .exercise {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border, #d9dee5);
+}
+.learning .retention {
+  margin-top: 24px;
+}
+@media (max-width: 760px) {
+  .learning {
+    padding: 16px;
+  }
+  .learning .layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .learning aside {
+    border-right: 0;
+    border-bottom: 1px solid var(--border, #d9dee5);
+    padding: 0 0 16px;
+  }
+}

@@ -38,6 +38,8 @@ class ToolContext(ActionContext):
     """
 
     thread_id: str | None
+    run_id: str | None = field(default=None, kw_only=True)
+    user_text: str | None = field(default=None, kw_only=True)
 
 
 @dataclass(frozen=True)

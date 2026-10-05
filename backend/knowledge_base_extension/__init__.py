@@ -12,6 +12,8 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from .answer import grounded_answer
+from .learning import LearningService
+from .learning import contribution as learning_contribution
 from .local import LocalClient
 from .rag import EmbeddingClient, RAGConfig, RAGIndex
 from .store import MAX_BYTES, KnowledgeError, KnowledgeStore
@@ -342,4 +344,6 @@ def install(registry, config):
     )
     if registry.plugin(contribution) is not True:
         raise RuntimeError("Full-stack plugin host required")
+    if registry.plugin(learning_contribution(LearningService(service))) is not True:
+        raise RuntimeError("Full-stack learning plugin host required")
     registry.routers([browser_router(service, set(config.get("origins", ["http://localhost:2026", "http://127.0.0.1:2026"])))])

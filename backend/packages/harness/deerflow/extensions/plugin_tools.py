@@ -16,6 +16,7 @@ from deerflow_extension_api.auth import ExtensionPrincipal
 from deerflow_extension_api.plugins import ToolContext
 from jsonschema import Draft202012Validator
 from langchain.tools import ToolRuntime
+from langchain_core.messages import HumanMessage
 from langchain_core.tools import StructuredTool, ToolException
 
 from deerflow.config.plugin_settings import defaults
@@ -23,6 +24,16 @@ from deerflow.runtime.user_context import resolve_runtime_user_id
 from deerflow.tools.tool_provenance import tag_plugin_tool
 
 logger = logging.getLogger(__name__)
+
+
+def current_user_text(runtime):
+    """Bounded human-authored text only; exclude middleware upload expansions."""
+    state = runtime.state if isinstance(runtime.state, Mapping) else {}
+    for message in reversed(state.get("messages", [])):
+        if isinstance(message, HumanMessage):
+            text = message.additional_kwargs.get("original_user_content", message.content)
+            return text if isinstance(text, str) and len(text) <= 16000 else None
+    return None
 
 
 def plugin_settings(source, plugin):
@@ -77,6 +88,8 @@ def _build_tool(source, plugin, declaration):
                 ExtensionPrincipal(resolve_runtime_user_id(runtime)),
                 MappingProxyType(settings),
                 context.get("thread_id"),
+                run_id=context.get("run_id"),
+                user_text=current_user_text(runtime),
                 agent_runs=runs.for_plugin(plugin.namespace) if runs is not None else None,
             )
             async with asyncio.timeout(30):

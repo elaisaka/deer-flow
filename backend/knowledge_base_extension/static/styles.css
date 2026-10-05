@@ -1,6 +1,786 @@
-.knowledge {max-width:1100px;padding:24px;font:14px/1.6 system-ui;color:inherit}
-input,select,button {font:inherit;margin:4px;padding:7px;border:1px solid #aaa;border-radius:6px;background:transparent;color:inherit}
-button {cursor:pointer}button:disabled {opacity:.5;cursor:wait}button:hover {background:#8882}
-section {border:1px solid #8885;padding:16px;margin:16px 0;border-radius:8px}
-pre {white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #8885;padding:12px;max-height:500px;overflow:auto}
-.error {color:#c44}.row {display:flex;flex-wrap:wrap;align-items:center;gap:8px}label {display:block}h2,h3 {margin:8px 0}
+/* Shadow DOM theme inheritance. Radius: panels 14px, controls 8px, labels 5px. */
+.knowledge {
+  --kb-accent: #436247;
+  --kb-accent-text: #fff;
+  --kb-accent-soft: #edf3ed;
+  --kb-error: #b42332;
+  --kb-error-soft: #fff1f2;
+  --kb-surface: var(--card, #fff);
+  --kb-border: var(--border, #e5e5e5);
+  --kb-muted: var(--muted-foreground, #666);
+  --kb-hover: var(--muted, #f5f5f5);
+  color: var(--foreground, #242424);
+  font: 14px/1.65
+    var(--font-sans, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif);
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+:host-context(.dark) .knowledge {
+  --kb-accent: #bdd3b6;
+  --kb-accent-text: #18241a;
+  --kb-accent-soft: #29332a;
+  --kb-error: #ffb4b9;
+  --kb-error-soft: #382428;
+}
+.knowledge *,
+.knowledge *::before,
+.knowledge *::after {
+  box-sizing: border-box;
+}
+.knowledge [hidden] {
+  display: none !important;
+}
+.knowledge h2,
+.knowledge h3,
+.knowledge h4,
+.knowledge p,
+.knowledge dl,
+.knowledge dd {
+  margin: 0;
+}
+.knowledge h2 {
+  font-size: 23px;
+  line-height: 1.4;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.knowledge h3 {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.knowledge h4 {
+  font-size: 13px;
+  font-weight: 600;
+}
+.knowledge .muted {
+  color: var(--kb-muted);
+  font-size: 12px;
+}
+.knowledge .intro {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 0 24px;
+}
+.knowledge .intro > div:first-child {
+  flex: 1;
+}
+.knowledge .intro-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.knowledge .formats {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.knowledge .formats > span:not(.muted) {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 3px 6px;
+  border: 1px solid var(--kb-border);
+  border-radius: 5px;
+}
+.knowledge .library-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  border: 1px solid var(--kb-border);
+  border-radius: 14px;
+  overflow: clip;
+  background: var(--kb-surface);
+  min-height: 560px;
+}
+.knowledge .base-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 22px 14px 16px;
+  border-right: 1px solid var(--kb-border);
+  min-width: 0;
+  background: color-mix(in srgb, var(--kb-hover) 36%, var(--kb-surface));
+}
+.knowledge .base-heading {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 8px;
+}
+.knowledge .base-count {
+  font-size: 11px;
+  color: var(--kb-muted);
+  background: var(--kb-hover);
+  padding: 0 6px;
+  border-radius: 5px;
+}
+.knowledge input,
+.knowledge select,
+.knowledge button {
+  font: inherit;
+  color: inherit;
+}
+.knowledge input,
+.knowledge select {
+  min-width: 0;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 11px;
+  border: 1px solid var(--kb-border);
+  border-radius: 8px;
+  background: var(--background, #fff);
+  line-height: 1.5;
+}
+.knowledge input::placeholder {
+  color: var(--kb-muted);
+  opacity: 1;
+  font-size: 12px;
+}
+.knowledge input[type="file"] {
+  padding: 12px;
+  border-style: dashed;
+  background: transparent;
+}
+.knowledge input::file-selector-button {
+  font: inherit;
+  color: inherit;
+  margin-right: 12px;
+  border: 1px solid var(--kb-border);
+  background: var(--kb-hover);
+  border-radius: 5px;
+  padding: 5px 9px;
+  cursor: pointer;
+}
+.knowledge .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--kb-border);
+  background: transparent;
+  border-radius: 8px;
+  min-height: 36px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 140ms ease,
+    transform 140ms ease,
+    border-color 140ms ease;
+}
+.knowledge .button:hover {
+  background: var(--kb-hover);
+}
+.knowledge .button:active,
+.knowledge .document-row:active {
+  transform: translateY(1px);
+}
+.knowledge .button.primary {
+  color: var(--kb-accent-text);
+  background: var(--kb-accent);
+  border-color: var(--kb-accent);
+}
+.knowledge .button.primary:hover {
+  filter: brightness(0.94);
+}
+.knowledge .button.quiet {
+  border-color: transparent;
+  color: var(--kb-muted);
+}
+.knowledge .button.danger {
+  color: var(--kb-error);
+}
+.knowledge .button.danger:hover {
+  background: var(--kb-error-soft);
+}
+.knowledge button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.knowledge :is(button, input, select, summary, a):focus-visible {
+  outline: 2px solid var(--kb-accent);
+  outline-offset: 3px;
+}
+.knowledge .form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+}
+.knowledge .form-row input {
+  flex: 1;
+}
+.knowledge .base-panel > .form-row {
+  flex-direction: column;
+  align-items: stretch;
+  margin-bottom: 24px;
+}
+.knowledge .create-base {
+  background: var(--kb-hover);
+}
+.knowledge .base-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.knowledge .base-item {
+  border-radius: 8px;
+}
+.knowledge .base-select {
+  text-align: left;
+  width: 100%;
+  padding: 10px 12px;
+  min-height: 42px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+}
+.knowledge .base-select:hover {
+  background: var(--kb-hover);
+}
+.knowledge .base-select[aria-pressed="true"] {
+  background: var(--kb-accent-soft);
+  color: var(--kb-accent);
+  border-color: color-mix(in srgb, var(--kb-accent) 24%, transparent);
+}
+.knowledge .disclosure {
+  margin-top: 14px;
+}
+.knowledge summary {
+  color: var(--kb-muted);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 0;
+  cursor: pointer;
+}
+.knowledge summary:hover {
+  color: var(--foreground, #242424);
+}
+.knowledge .disclosure[open] > summary {
+  margin-bottom: 6px;
+}
+.knowledge .base-management {
+  margin: 0;
+  padding: 0 10px 6px;
+}
+.knowledge .base-management > summary {
+  font-size: 11px;
+  padding: 3px 0;
+}
+.knowledge .base-management .form-row {
+  flex-direction: column;
+  align-items: stretch;
+}
+.knowledge .base-management > .button {
+  margin-top: 8px;
+  width: 100%;
+}
+.knowledge .maintenance {
+  padding: 32px 4px 0;
+  margin-top: auto;
+}
+.knowledge .cleanup-button {
+  white-space: normal;
+  font-size: 11px;
+  padding: 6px 0;
+  justify-content: flex-start;
+  text-align: left;
+}
+.knowledge .maintenance p {
+  margin-top: 6px;
+  font-size: 11px;
+}
+.knowledge .workspace {
+  min-width: 0;
+  padding: 24px 28px;
+}
+.knowledge .workspace-heading,
+.knowledge .section-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+.knowledge .workspace-heading {
+  align-items: flex-end;
+  margin-bottom: 26px;
+}
+.knowledge .eyebrow {
+  font-size: 11px;
+  color: var(--kb-muted);
+  margin-bottom: 6px;
+}
+.knowledge .list-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.knowledge .list-summary > .button {
+  margin-left: auto;
+}
+.knowledge .document-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.knowledge .document-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  padding: 14px 8px;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+.knowledge .document-row:hover {
+  background: var(--kb-hover);
+}
+.knowledge .document-row[aria-pressed="true"] {
+  background: var(--kb-accent-soft);
+  border-color: color-mix(in srgb, var(--kb-accent) 24%, transparent);
+}
+.knowledge .file-kind {
+  flex: 0 0 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  border: 1px solid var(--kb-border);
+  border-radius: 6px;
+  color: var(--kb-muted);
+  background: var(--kb-surface);
+}
+.knowledge .document-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+}
+.knowledge .document-name {
+  font-size: 13px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.knowledge .document-meta {
+  font-size: 10px;
+  color: var(--kb-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.knowledge .document-states {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.knowledge .badge {
+  font-size: 10px;
+  font-weight: 400;
+  padding: 3px 6px;
+  border-radius: 5px;
+  white-space: nowrap;
+  color: var(--kb-muted);
+  background: var(--kb-hover);
+}
+.knowledge .badge.ready {
+  color: var(--kb-accent);
+  background: var(--kb-accent-soft);
+}
+.knowledge .badge.failed {
+  color: var(--kb-error);
+  background: var(--kb-error-soft);
+}
+.knowledge .row-action {
+  font-size: 11px;
+  color: var(--kb-muted);
+}
+.knowledge .inline-error {
+  color: var(--kb-error);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.knowledge .import-area {
+  border-top: 1px solid var(--kb-border);
+  margin-top: 22px;
+  padding-top: 10px;
+}
+.knowledge .upload-panel > summary {
+  color: inherit;
+  font-size: 13px;
+}
+.knowledge .disclosure-body {
+  display: grid;
+  gap: 12px;
+  padding: 8px 0 12px;
+}
+.knowledge .disclosure-body > .button {
+  justify-self: start;
+}
+.knowledge .windows-import {
+  margin: 2px 0 8px;
+  padding-left: 0;
+}
+.knowledge .search-panel {
+  border-top: 1px solid var(--kb-border);
+  margin-top: 22px;
+  padding-top: 24px;
+}
+.knowledge .search-panel > p {
+  margin-top: 6px;
+}
+.knowledge .search-panel > .form-row {
+  margin-top: 16px;
+}
+.knowledge .search-results:not(:empty) {
+  margin-top: 18px;
+}
+.knowledge .evidence {
+  padding: 18px 0;
+}
+.knowledge .evidence + .evidence {
+  border-top: 1px solid var(--kb-border);
+}
+.knowledge a {
+  color: var(--kb-accent);
+  text-underline-offset: 3px;
+  font-size: 12px;
+}
+.knowledge pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 420px;
+  overflow: auto;
+  font:
+    12px/1.75 ui-monospace,
+    "Cascadia Code",
+    Consolas,
+    monospace;
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--kb-border);
+  border-radius: 8px;
+  background: var(--kb-hover);
+}
+.knowledge .content-text {
+  font-family: inherit;
+  font-size: 13px;
+}
+.knowledge .detail-panel {
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 1px solid var(--kb-border);
+}
+.knowledge .detail-panel .section-heading h3 {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.knowledge .detail-panel > .button {
+  margin-top: 16px;
+  max-width: 100%;
+  white-space: normal;
+}
+.knowledge .metadata {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 7px 12px;
+  margin-top: 18px;
+  font-size: 11px;
+}
+.knowledge .metadata dt {
+  color: var(--kb-muted);
+}
+.knowledge .metadata-value {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, Consolas, monospace;
+}
+.knowledge .index-panel {
+  margin-top: 22px;
+  padding: 16px;
+  border: 1px solid var(--kb-border);
+  border-radius: 8px;
+}
+.knowledge .index-panel p {
+  margin-top: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.knowledge .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.knowledge .version-entry {
+  padding: 14px 0;
+}
+.knowledge .version-entry + .version-entry {
+  border-top: 1px solid var(--kb-border);
+}
+.knowledge .version-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.knowledge .version-heading code {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.knowledge .version-entry .disclosure {
+  margin-top: 4px;
+}
+.knowledge .version-entry > .button {
+  white-space: normal;
+  text-align: left;
+  justify-content: flex-start;
+  max-width: 100%;
+  padding-left: 0;
+}
+.knowledge .danger-zone {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 18px;
+  margin-top: 20px;
+  border-top: 1px solid var(--kb-border);
+}
+.knowledge .delete-warning {
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--kb-error-soft);
+  color: var(--kb-error);
+  margin-top: 18px;
+}
+.knowledge .delete-warning p {
+  font-size: 12px;
+  margin-top: 8px;
+}
+.knowledge .local-entries {
+  margin-top: 18px;
+}
+.knowledge .local-entry {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 0;
+}
+.knowledge .path-label {
+  color: var(--kb-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.knowledge .detail-panel > select {
+  margin: 16px 0 12px;
+}
+.knowledge .notice {
+  padding: 12px 16px;
+  border: 1px solid var(--kb-border);
+  border-radius: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  margin-bottom: 16px;
+}
+.knowledge .error {
+  color: var(--kb-error);
+  background: var(--kb-error-soft);
+}
+.knowledge .feedback {
+  color: var(--kb-accent);
+  background: var(--kb-accent-soft);
+}
+.knowledge .empty {
+  text-align: center;
+  padding: 46px 20px;
+}
+.knowledge .empty h3 {
+  margin-top: 18px;
+}
+.knowledge .empty p {
+  color: var(--kb-muted);
+  font-size: 12px;
+  max-width: 320px;
+  margin: 8px auto 0;
+}
+.knowledge .empty-mark {
+  display: inline-flex;
+  height: 52px;
+  width: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--kb-border);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--kb-muted);
+  background: var(--kb-hover);
+}
+.knowledge .page-help {
+  margin-top: 18px;
+}
+.knowledge .page-help p + p {
+  margin-top: 8px;
+}
+.knowledge .page-help p {
+  color: var(--kb-muted);
+  font-size: 12px;
+}
+.knowledge .loading {
+  padding: 14px 0;
+  display: grid;
+  gap: 14px;
+}
+.knowledge .skeleton {
+  height: 50px;
+  width: 100%;
+  border-radius: 8px;
+  background: var(--kb-hover);
+  animation: kb-pulse 1.5s ease-in-out infinite alternate;
+}
+.knowledge .skeleton:nth-child(3) {
+  width: 85%;
+}
+.knowledge .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+@keyframes kb-pulse {
+  to {
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .knowledge *,
+  .knowledge *::before,
+  .knowledge *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (max-width: 1100px) {
+  .knowledge .library-layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+  .knowledge .workspace {
+    padding: 22px 20px;
+  }
+  .knowledge .document-states {
+    flex-direction: column;
+  }
+  .knowledge .row-action {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .knowledge .intro {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 18px;
+  }
+  .knowledge .intro > div:first-child {
+    flex-basis: 100%;
+  }
+  .knowledge .intro > .button {
+    margin-left: auto;
+  }
+  .knowledge .library-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .knowledge .base-panel {
+    border-right: 0;
+    border-bottom: 1px solid var(--kb-border);
+    padding: 18px 16px;
+  }
+  .knowledge .base-panel > .form-row {
+    flex-direction: row;
+    margin-bottom: 16px;
+  }
+  .knowledge .base-heading {
+    padding: 0;
+    margin-bottom: 14px;
+  }
+  .knowledge .base-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .knowledge .base-select {
+    border-color: var(--kb-border);
+  }
+  .knowledge .base-management {
+    padding: 4px;
+  }
+  .knowledge .maintenance {
+    padding-top: 16px;
+  }
+  .knowledge .maintenance p {
+    display: none;
+  }
+  .knowledge .workspace {
+    padding: 22px 16px;
+  }
+  .knowledge .workspace-heading {
+    margin-bottom: 18px;
+  }
+  .knowledge h2 {
+    font-size: 21px;
+  }
+  .knowledge .document-row {
+    align-items: flex-start;
+    gap: 9px;
+    padding: 12px 4px;
+  }
+  .knowledge .document-meta {
+    max-width: 150px;
+  }
+  .knowledge .form-row:not(.base-panel > .form-row) {
+    flex-wrap: wrap;
+  }
+  .knowledge .search-panel > .form-row input {
+    flex-basis: 100%;
+  }
+  .knowledge .search-panel > .form-row .button {
+    width: 100%;
+  }
+  .knowledge .section-heading {
+    flex-wrap: wrap;
+  }
+  .knowledge .index-panel {
+    padding: 12px;
+  }
+  .knowledge .actions .button {
+    white-space: normal;
+    text-align: left;
+  }
+}
