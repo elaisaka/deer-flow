@@ -14,6 +14,8 @@ Phase four extends the same SQLite library with current-version vector indexing,
 
 Phase five adds persistent learning plans, revision-bound editing, pause/resume, cited chapter teaching and objective/short-answer exercises through the same knowledge extension. The learning page and owner-bound chat tools share one service. Answers/rubrics stay server-only; chat submissions must match the actual human message, and only the user can mark a chapter complete on the page. Historical teaching and answers survive document changes, with live source invalidation warnings. See [learning setup, chat commands, automated checks and recorded human acceptance](docs/LEARNING.md). Notes, mistake notebooks, spaced review and notifications remain phase six work.
 
+The learning workspace now opens the first available plan and groups plan selection, chapter progress, daily time and the chapter route in a responsive layout. One creation entry retains all original inputs; editing, pause/resume, change confirmation, cited teaching, exercises and paged learning records remain available. Progress counts user-marked completion and does not claim mastery.
+
 Synthetic acceptance on the Docker development stack completed on 2026-10-05, including human answers, chapter editing, pause/restart/resume and document update/deletion. A short-answer false positive and a stale page revision were fixed and rechecked; model feedback remains a reference evaluation. Repository-wide gates still have failures, recorded in the learning guide.
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](./backend/pyproject.toml)

@@ -290,6 +290,10 @@ test("create requires explicit scope and preserves user foundation", async () =>
   const f = await fixture();
   try {
     await f.click("创建计划");
+    assert.equal(
+      f.surface.querySelector('.plan-button[aria-current="true"]'),
+      null,
+    );
     const form = f.surface.querySelector("main form"),
       inputs = form.querySelectorAll("input"),
       texts = form.querySelectorAll("textarea");
@@ -312,6 +316,209 @@ test("create requires explicit scope and preserves user foundation", async () =>
     assert.equal(call.payload.input.foundation, "用户填写的 Java 基础");
     assert.equal(call.payload.input.days, 14);
     assert.deepEqual(call.payload.input.knowledge_base_ids, ["base-a"]);
+  } finally {
+    f.dispose();
+  }
+});
+
+test("initial view opens the first plan, derives chapter progress and has one create entry", async () => {
+  const p = plan();
+  p.progress["chapter-a"].status = "completed";
+  const f = await fixture({ get: () => ({ plan: p }) });
+  try {
+    assert.equal(f.surface.querySelector("main h2").textContent, "plan-a");
+    assert.match(
+      f.surface.querySelector(".plan-overview").textContent,
+      /1 \/ 1/,
+    );
+    assert.equal(
+      [...f.surface.querySelectorAll("button")].filter(
+        (node) => node.textContent === "创建计划",
+      ).length,
+      1,
+    );
+    assert.equal(
+      f.calls.filter((call) =>
+        ["start", "complete", "create"].includes(call.action),
+      ).length,
+      0,
+    );
+  } finally {
+    f.dispose();
+  }
+});
+
+test("pause, changed-chapter confirmation and completion keep revision-bound explicit actions", async () => {
+  const p = plan();
+  p.progress["chapter-a"] = {
+    status: "in_progress",
+    needs_confirmation: true,
+    latest_lesson_id: "lesson-a",
+  };
+  const f = await fixture({
+    get: () => ({ plan: p }),
+    confirm_change: () => {
+      p.progress["chapter-a"].needs_confirmation = false;
+      p.revision++;
+      return {};
+    },
+    complete: () => {
+      p.progress["chapter-a"].status = "completed";
+      return {};
+    },
+    pause: () => {
+      p.status = "paused";
+      p.revision++;
+      return {};
+    },
+    resume: () => {
+      p.status = "active";
+      p.revision++;
+      return {};
+    },
+  });
+  try {
+    const start = () =>
+      [...f.surface.querySelectorAll("button")].find(
+        (node) => node.textContent === "开始章节",
+      );
+    assert.equal(start().disabled, true);
+    await f.click("我已核对章节变化");
+    assert.equal(
+      f.calls.find((call) => call.action === "confirm_change").payload
+        .expected_revision,
+      2,
+    );
+    assert.equal(start().disabled, false);
+    await f.click("暂停计划");
+    assert.equal(start().disabled, true);
+    await f.click("继续计划");
+    await f.click("我已完成本章节");
+    assert.equal(
+      f.calls.find((call) => call.action === "complete").payload.chapter_id,
+      "chapter-a",
+    );
+    assert.match(
+      f.surface.querySelector(".plan-overview").textContent,
+      /1 \/ 1/,
+    );
+  } finally {
+    f.dispose();
+  }
+});
+
+test("lesson follow-up, history tabs, pagination and answer feedback remain available", async () => {
+  const f = await fixture({
+    explain: () => ({ lesson: lesson() }),
+    history: ({ kind, offset }) => ({
+      records:
+        kind === "lessons"
+          ? [{ generated: 1791158400, lesson_id: "lesson-a" }]
+          : [{ created: 1791158400, attempt_id: "attempt-a" }],
+      next_offset: offset === 0 ? 20 : null,
+    }),
+    attempt: () => ({
+      attempt: {
+        answer: "合成历史答案",
+        feedback: "合成历史反馈",
+        reference_evaluation: true,
+        sources: [],
+      },
+    }),
+  });
+  try {
+    await f.click("开始章节");
+    const questionForm = f.surface.querySelector(".lesson form");
+    questionForm.querySelector("textarea").value = "请解释快照";
+    questionForm.dispatchEvent(
+      new f.window.Event("submit", { cancelable: true, bubbles: true }),
+    );
+    await tick();
+    assert.equal(
+      f.calls.find((call) => call.action === "explain").payload.question,
+      "请解释快照",
+    );
+    await f.click("查看学习记录");
+    await f.click("下一页");
+    assert.ok(
+      f.calls.some(
+        (call) => call.action === "history" && call.payload.offset === 20,
+      ),
+    );
+    await f.click("上一页");
+    await f.click("答题记录");
+    assert.equal(
+      f.surface.querySelector('.history-tabs button[aria-pressed="true"]')
+        .textContent,
+      "答题记录",
+    );
+    const detail = [...f.surface.querySelectorAll(".history button")].find(
+      (node) => node.textContent.includes("查看答题与反馈"),
+    );
+    detail.click();
+    await tick();
+    assert.match(f.surface.textContent, /合成历史答案/);
+    assert.match(f.surface.textContent, /合成历史反馈/);
+  } finally {
+    f.dispose();
+  }
+});
+
+test("empty and failed plan lists provide a visible recovery path without duplicate creation", async () => {
+  const f = await fixture({ list: () => ({ plans: [] }) });
+  try {
+    assert.match(f.surface.textContent, /从目标开始/);
+    assert.equal(
+      [...f.surface.querySelectorAll("button")].filter(
+        (node) => node.textContent === "创建计划",
+      ).length,
+      1,
+    );
+  } finally {
+    f.dispose();
+  }
+  const failed = await fixture({
+    list: () => {
+      throw Error("合成加载失败");
+    },
+  });
+  try {
+    assert.match(
+      failed.surface.querySelector('[role="alert"]').textContent,
+      /合成加载失败/,
+    );
+    assert.ok(
+      [...failed.surface.querySelectorAll("button")].some(
+        (node) => node.textContent === "重新加载",
+      ),
+    );
+    assert.equal(failed.surface.querySelector(".loading"), null);
+  } finally {
+    failed.dispose();
+  }
+});
+
+test("a late initial plan list keeps the user's creation form and draft", async () => {
+  let finishList;
+  const pending = new Promise((resolve) => {
+    finishList = resolve;
+  });
+  const f = await fixture({ list: () => pending });
+  try {
+    await f.click("创建计划");
+    const topic = f.surface.querySelector(".create-form input");
+    topic.value = "合成学习草稿";
+    finishList({
+      plans: [{ plan_id: "plan-a", topic: "plan-a", status: "active" }],
+    });
+    await tick();
+    assert.equal(f.surface.querySelector(".create-form input"), topic);
+    assert.equal(topic.value, "合成学习草稿");
+    assert.equal(f.calls.filter((call) => call.action === "get").length, 0);
+    assert.equal(
+      f.surface.querySelector('.plan-button[aria-current="true"]'),
+      null,
+    );
   } finally {
     f.dispose();
   }

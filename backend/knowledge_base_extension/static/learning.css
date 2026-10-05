@@ -1,11 +1,19 @@
 .learning {
+  --study-accent: #436247;
+  --study-accent-text: #fff;
+  --study-accent-soft: #edf3ed;
   color: var(--foreground, #202329);
   background: var(--background, #fff);
   font-family: inherit;
-  line-height: 1.6;
-  padding: 24px;
-  max-width: 1400px;
+  font-size: 14px;
+  line-height: 1.65;
+  width: 100%;
   margin: auto;
+}
+:host-context(.dark) .learning {
+  --study-accent: #bdd3b6;
+  --study-accent-text: #18241a;
+  --study-accent-soft: #29332a;
 }
 .learning * {
   box-sizing: border-box;
@@ -13,161 +21,612 @@
 .learning [hidden] {
   display: none !important;
 }
-.learning header {
-  padding-bottom: 24px;
-}
-.learning h1 {
-  font-size: 28px;
-  font-weight: 650;
-  margin: 0;
+.learning :is(h2, h3, h4, p, dd) {
+  overflow-wrap: anywhere;
 }
 .learning h2 {
-  font-size: 22px;
-  margin: 0 0 12px;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.4;
 }
 .learning h3 {
-  font-size: 18px;
-  margin: 0 0 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.5;
 }
 .learning h4 {
-  font-size: 16px;
   margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 650;
 }
 .learning p {
-  max-width: 75ch;
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
   margin: 8px 0;
+}
+.learning .intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+.learning .intro-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+.learning .intro .muted {
+  margin: 0;
 }
 .learning .layout {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 560px;
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: 14px;
+  overflow: clip;
 }
 .learning aside {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 24px 14px;
   border-right: 1px solid var(--border, #d9dee5);
-  padding-right: 20px;
+  background: color-mix(in srgb, var(--muted, #f5f6f5) 25%, transparent);
 }
-.learning aside button {
-  display: block;
+.learning .sidebar-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  margin-bottom: 18px;
+}
+.learning .sidebar-heading h2 {
+  font-size: 15px;
+  letter-spacing: 0;
+}
+.learning .count {
+  font-size: 11px;
+  color: var(--muted-foreground, #636a64);
+  background: var(--muted, #f0f2f0);
+  padding: 0 6px;
+  border-radius: 5px;
+}
+.learning .plan-list {
+  display: grid;
+  gap: 6px;
+}
+.learning button {
+  min-height: 36px;
+  max-width: 100%;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin: 0;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+  overflow-wrap: anywhere;
+}
+.learning button:hover {
+  background: var(--muted, #f1f4f1);
+}
+.learning button.primary {
+  background: var(--study-accent);
+  color: var(--study-accent-text);
+  border-color: var(--study-accent);
+}
+.learning button.primary:hover {
+  background: color-mix(
+    in srgb,
+    var(--study-accent) 88%,
+    var(--foreground, #202329)
+  );
+}
+.learning button.quiet {
+  border-color: transparent;
+  color: var(--muted-foreground, #636a64);
+}
+.learning button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.learning button[aria-busy="true"] {
+  cursor: wait;
+}
+.learning .plan-button {
   width: 100%;
+  display: block;
   text-align: left;
-  margin-bottom: 8px;
+  padding: 12px 10px;
+  border-color: transparent;
+}
+.learning .plan-topic {
+  display: block;
+  font-size: 13px;
+  font-weight: 550;
+}
+.learning .plan-status {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted-foreground, #636a64);
+  font-size: 11px;
+}
+.learning .plan-button[aria-current="true"] {
+  background: var(--study-accent-soft);
+  border-color: color-mix(in srgb, var(--study-accent) 25%, transparent);
+  color: var(--study-accent);
+}
+.learning .sidebar-footnote {
+  padding: 28px 10px 0;
+  margin-top: auto;
+  color: var(--muted-foreground, #636a64);
+  font-size: 11px;
+}
+.learning .sidebar-footnote p {
+  margin: 2px 0;
+}
+.learning .sidebar-empty {
+  padding: 0 10px;
 }
 .learning main {
   min-width: 0;
+  padding: 28px;
 }
-.learning button {
-  font: inherit;
-  cursor: pointer;
-  color: inherit;
-  background: var(--secondary, #eef2f7);
-  border: 1px solid var(--border, #d9dee5);
-  border-radius: 6px;
-  padding: 7px 12px;
-  margin: 4px 4px 4px 0;
-}
-.learning button:hover {
-  background: var(--accent, #e3eaf3);
-}
-.learning button:disabled {
-  opacity: 0.5;
-  cursor: wait;
-}
-.learning button[aria-current="true"] {
-  border-color: var(--primary, #2465a8);
-  font-weight: 650;
-}
-.learning :is(button, input, textarea, select, a):focus-visible {
-  outline: 2px solid var(--ring, #2465a8);
+.learning :is(button, input, textarea, select, a, summary):focus-visible {
+  outline: 2px solid var(--study-accent);
   outline-offset: 3px;
 }
 .learning .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px;
 }
-.learning label {
-  display: block;
-  margin: 12px 0;
-  font-size: 14px;
+.learning .plan-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
 }
-.learning :is(input:not([type="checkbox"]), textarea, select) {
-  display: block;
-  width: 100%;
-  font: inherit;
-  color: inherit;
-  background: var(--background, #fff);
-  border: 1px solid var(--border, #d9dee5);
+.learning .plan-heading > div {
+  min-width: 0;
+}
+.learning .eyebrow {
+  color: var(--muted-foreground, #636a64);
+  font-size: 11px;
+  margin: 0 0 8px;
+}
+.learning .plan-goal {
+  color: var(--muted-foreground, #636a64);
+  margin: 10px 0 0;
+}
+.learning .status-label,
+.learning .chapter-state {
+  flex-shrink: 0;
   border-radius: 5px;
-  padding: 9px;
-  margin-top: 5px;
+  font-size: 11px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  background: var(--muted, #f1f4f1);
+  color: var(--muted-foreground, #636a64);
 }
-.learning input[type="checkbox"] {
-  margin-right: 8px;
+.learning .status-label.active,
+.learning [data-status="in_progress"] .chapter-state,
+.learning [data-status="completed"] .chapter-state {
+  color: var(--study-accent);
+  background: var(--study-accent-soft);
 }
-.learning textarea {
-  min-height: 85px;
-  resize: vertical;
-}
-.learning form {
-  max-width: 700px;
-}
-.learning fieldset {
-  border: 1px solid var(--border, #d9dee5);
-  border-radius: 6px;
-  padding: 16px;
-  margin: 16px 0;
-}
-.learning .chapters {
-  padding-left: 24px;
-}
-.learning .chapters li {
+.learning .plan-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0 20px;
   padding: 20px 0;
+  border-block: 1px solid var(--border, #d9dee5);
+}
+.learning .plan-overview dt {
+  font-size: 11px;
+  color: var(--muted-foreground, #636a64);
+}
+.learning .plan-overview dd {
+  margin: 6px 0 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+.learning .plan-overview p {
+  font-size: 11px;
+  color: var(--muted-foreground, #636a64);
+  margin: 6px 0 0;
+}
+.learning .background-info {
+  font-size: 12px;
+  color: var(--muted-foreground, #636a64);
+}
+.learning summary {
+  cursor: pointer;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 0;
+}
+.learning .budget-description {
+  margin-top: 12px;
+}
+.learning .section-heading,
+.learning .chapter-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.learning .section-heading {
+  margin-top: 28px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border, #d9dee5);
 }
-.learning .warning,
-.learning [role="alert"] {
-  border-left: 3px solid var(--primary, #2465a8);
-  padding: 8px 12px;
-  background: var(--muted, #f1f4f7);
+.learning .chapters {
+  position: relative;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.learning .chapters::before {
+  content: "";
+  position: absolute;
+  top: 26px;
+  bottom: 32px;
+  left: 15px;
+  width: 1px;
+  background: var(--border, #d9dee5);
+}
+.learning .chapters > li {
+  position: relative;
+  padding: 24px 0 24px 48px;
+  border-bottom: 1px solid var(--border, #d9dee5);
+}
+.learning .chapters > li:last-child {
+  border-bottom: 0;
+}
+.learning .chapter-number {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground, #636a64);
+  background: var(--background, #fff);
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: 8px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.learning [data-status="in_progress"] .chapter-number,
+.learning [data-status="completed"] .chapter-number {
+  color: var(--study-accent);
+  background: var(--study-accent-soft);
+  border-color: color-mix(in srgb, var(--study-accent) 25%, transparent);
+}
+.learning .chapter-meta {
+  font-size: 11px;
+  color: var(--muted-foreground, #636a64);
+  margin: 5px 0 12px;
+}
+.learning .chapter-objective {
+  font-size: 13px;
+}
+.learning .chapters .actions {
+  margin-top: 16px;
 }
 .learning .muted,
 .learning .source,
 .learning .retention {
-  font-size: 13px;
-  color: var(--muted-foreground, #5b6573);
+  font-size: 12px;
+  color: var(--muted-foreground, #636a64);
+}
+.learning .source {
+  font-size: 11px;
 }
 .learning .source a {
-  color: var(--primary, #2465a8);
+  color: var(--study-accent);
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .learning .source span {
   overflow-wrap: anywhere;
 }
-.learning :is(.lesson, .history) {
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 2px solid var(--border, #d9dee5);
+.learning .warning,
+.learning [role="alert"] {
+  border-left: 3px solid var(--study-accent);
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+  background: var(--muted, #f1f4f1);
+  font-size: 12px;
 }
-.learning .exercise {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--border, #d9dee5);
+.learning .notice {
+  margin-bottom: 20px;
 }
-.learning .retention {
+.learning label {
+  display: block;
+  margin: 12px 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+.learning :is(input:not([type="checkbox"]), textarea, select) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  background: var(--background, #fff);
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 6px;
+}
+.learning input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: var(--study-accent);
+}
+.learning textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+.learning form {
+  max-width: 100%;
+}
+.learning fieldset {
+  min-width: 0;
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.learning legend {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 6px;
+}
+.learning .view-heading {
+  margin-bottom: 20px;
+}
+.learning .view-heading p {
+  margin-bottom: 0;
+}
+.learning .create-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 16px;
   margin-top: 24px;
 }
-@media (max-width: 760px) {
-  .learning {
-    padding: 16px;
+.learning .create-form > label {
+  margin: 0;
+}
+.learning .create-form > label:nth-of-type(-n + 3),
+.learning .create-form > label:nth-of-type(8),
+.learning .create-form > fieldset,
+.learning .create-form > button {
+  grid-column: 1 / -1;
+}
+.learning .create-form > fieldset {
+  margin: 0;
+}
+.learning .create-form > button {
+  justify-self: start;
+}
+.learning .create-form fieldset p {
+  color: var(--muted-foreground, #636a64);
+  font-size: 12px;
+}
+.learning .edit-form > button,
+.learning .edit-chapters > button,
+.learning .edit-chapters fieldset > button,
+.learning .history > button {
+  margin: 4px 6px 4px 0;
+}
+.learning :is(.lesson, .history) {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border, #d9dee5);
+}
+.learning .lesson h3,
+.learning .history h3 {
+  margin-bottom: 16px;
+}
+.learning .lesson h4 {
+  margin-top: 24px;
+}
+.learning .lesson > p {
+  line-height: 1.85;
+}
+.learning .followup-form {
+  margin: 24px 0;
+  padding-block: 20px;
+  border-block: 1px solid var(--border, #d9dee5);
+}
+.learning .followup-form > label {
+  margin-top: 0;
+}
+.learning .exercise {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--border, #d9dee5);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--muted, #f5f6f5) 20%, transparent);
+}
+.learning .exercise h4 {
+  margin-top: 0;
+}
+.learning .exercise input[type="checkbox"] {
+  vertical-align: middle;
+}
+.learning .history > p {
+  font-size: 12px;
+}
+.learning .history-tabs {
+  margin: 16px 0;
+}
+.learning .history-tabs button[aria-pressed="true"] {
+  background: var(--study-accent-soft);
+  color: var(--study-accent);
+  border-color: color-mix(in srgb, var(--study-accent) 25%, transparent);
+}
+.learning .history-records {
+  display: grid;
+  gap: 8px;
+}
+.learning .history-records button {
+  text-align: left;
+  padding: 12px;
+}
+.learning .history-pagination {
+  margin-top: 16px;
+}
+.learning .attempt-detail {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--muted, #f1f4f1);
+  border-radius: 8px;
+}
+.learning .retention {
+  font-size: 11px;
+  margin-top: 24px;
+}
+.learning .welcome {
+  max-width: 440px;
+  padding: 52px 0;
+}
+.learning .welcome-mark {
+  color: var(--study-accent);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  margin-bottom: 12px;
+}
+.learning .welcome p {
+  color: var(--muted-foreground, #636a64);
+}
+.learning .loading {
+  display: grid;
+  gap: 12px;
+}
+.learning .skeleton {
+  min-height: 44px;
+  border-radius: 8px;
+  background: var(--muted, #f1f4f1);
+  animation: study-pulse 1.6s ease-in-out infinite alternate;
+}
+.learning .skeleton:nth-last-child(2) {
+  width: 85%;
+}
+.learning .skeleton:last-child {
+  width: 65%;
+}
+.learning .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@keyframes study-pulse {
+  to {
+    opacity: 0.45;
+  }
+}
+@media (max-width: 1100px) {
+  .learning .layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+  .learning main {
+    padding: 24px;
+  }
+  .learning .plan-overview dd {
+    font-size: 21px;
+  }
+}
+@media (max-width: 767px) {
+  .learning .intro {
+    margin-bottom: 20px;
+  }
+  .learning .intro-title {
+    font-size: 15px;
   }
   .learning .layout {
     grid-template-columns: 1fr;
-    gap: 20px;
+    min-height: 0;
   }
   .learning aside {
     border-right: 0;
     border-bottom: 1px solid var(--border, #d9dee5);
-    padding: 0 0 16px;
+    padding: 18px 12px;
+  }
+  .learning .sidebar-heading {
+    padding: 0 6px;
+    margin-bottom: 12px;
+  }
+  .learning .plan-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .learning .plan-list > :only-child {
+    grid-column: 1 / -1;
+  }
+  .learning .sidebar-footnote {
+    display: none;
+  }
+  .learning main {
+    padding: 22px 16px;
+  }
+  .learning h2 {
+    font-size: 21px;
+  }
+  .learning .plan-heading {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .learning .plan-overview {
+    gap: 10px;
+  }
+  .learning .plan-overview dd {
+    font-size: 18px;
+  }
+  .learning .chapter-heading {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .learning .chapters > li {
+    padding-left: 42px;
+  }
+  .learning .create-form {
+    grid-template-columns: 1fr;
+  }
+  .learning .welcome {
+    padding: 28px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .learning .skeleton {
+    animation: none;
+  }
+  .learning button {
+    transition: none;
   }
 }

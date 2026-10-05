@@ -33,6 +33,12 @@ Model answers must match host original human text and run, never payload claims.
 Short-answer reviews in `feedback.py` require literal learner/evidence grounding,
 independent bounded audit and program-derived verdicts; flag legacy feedback.
 Run `test_learning.py` and frontend `node --test tests/learning-ui.test.mjs`.
+The learning UI inherits host theme tokens with a shared sage accent, scoped to
+`.learning`. Keep one creation entry and all original field labels/order. Open
+the first plan once on initial load, without starting a chapter or saving data;
+do not replace a creation view with a late initial response. Derive overview
+counts from server progress/budget, retaining coverage, gaps and invalid-source
+warnings. Preserve explicit confirmation/completion and immutable history actions.
 Parser workers are bounded and disposable; document text is untrusted data.
 Update/delete require browser session/Origin/CSRF routes and user button clicks,
 without Windows keys. Bind updates to selected bytes and current revision.

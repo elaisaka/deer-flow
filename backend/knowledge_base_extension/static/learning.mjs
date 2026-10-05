@@ -1,3 +1,5 @@
+// Taste redesign-preserve: DESIGN_VARIANCE 4 / MOTION_INTENSITY 2 / VISUAL_DENSITY 5.
+// Native product surface: inherit the host theme and preserve learning contracts.
 function mount(surface, context) {
   const errors = {
     index_not_ready: "所选库有资料尚未索引或索引失败，请先在知识库页面处理。",
@@ -38,11 +40,11 @@ function mount(surface, context) {
     crossorigin: "use-credentials",
   });
   const root = el("div", "", { class: "learning" });
-  const header = el("header"),
+  const header = el("header", "", { class: "intro" }),
     layout = el("div", "", { class: "layout" });
   const sidebar = el("aside", "", { "aria-label": "学习计划" }),
-    main = el("main");
-  const notice = el("p", "", { role: "alert", hidden: "" });
+    main = el("main", "", { "aria-label": "学习工作区" });
+  const notice = el("p", "", { role: "alert", class: "notice", hidden: "" });
   const requests = new Map();
   let active = true,
     selected = null,
@@ -50,7 +52,8 @@ function mount(surface, context) {
     listSequence = 0,
     historySequence = 0,
     planRefreshSequence = 0,
-    lessonSequence = 0;
+    lessonSequence = 0,
+    initialSelectionDone = false;
   const valid = (id, turn) => active && selected === id && sequence === turn;
   const call = async (action, payload = {}) => {
     const result = await context.callBackend(action, payload);
@@ -74,7 +77,10 @@ function mount(surface, context) {
   };
   const run = async (fn, node) => {
     if (!active || node?.disabled) return;
-    if (node) node.disabled = true;
+    if (node) {
+      node.disabled = true;
+      node.setAttribute("aria-busy", "true");
+    }
     notice.hidden = true;
     try {
       await fn();
@@ -82,9 +88,18 @@ function mount(surface, context) {
       if (active) {
         notice.textContent = error.message;
         notice.hidden = false;
+        for (const pane of [sidebar, main]) {
+          if (pane.querySelector(".loading"))
+            pane.replaceChildren(
+              el("p", "加载未完成，请点击重新加载后重试。", { class: "muted" }),
+            );
+        }
       }
     } finally {
-      if (node && active) node.disabled = false;
+      if (node && active) {
+        node.disabled = false;
+        node.removeAttribute("aria-busy");
+      }
     }
   };
   const button = (text, fn, attrs = {}) => {
@@ -105,6 +120,22 @@ function mount(surface, context) {
     parent.append(wrap);
     return input;
   };
+  const loading = (parent, label) => {
+    const state = el("div", "", {
+      class: "loading",
+      role: "status",
+      "aria-label": label,
+    });
+    state.append(el("span", label, { class: "sr-only" }));
+    for (let i = 0; i < 3; i++)
+      state.append(el("div", "", { class: "skeleton" }));
+    parent.replaceChildren(state);
+  };
+  const viewHeading = (title, description) => {
+    const heading = el("div", "", { class: "view-heading" });
+    heading.append(el("h2", title), el("p", description, { class: "muted" }));
+    return heading;
+  };
   const sourceLinks = (parent, sources, ids = null) => {
     for (const source of sources.filter(
       (s) => !ids || ids.includes(s.citation_id),
@@ -114,7 +145,7 @@ function mount(surface, context) {
         const link = el("a", `${source.document_name} · 原文`, {
           href: source.citation_url,
           target: "_blank",
-          rel: "noopener",
+          rel: "noopener noreferrer",
         });
         line.append(
           link,
@@ -137,30 +168,62 @@ function mount(surface, context) {
     const turn = ++listSequence;
     const result = await call("list");
     if (!active || turn !== listSequence) return;
-    sidebar.replaceChildren(el("h2", "我的计划"));
+    const heading = el("div", "", { class: "sidebar-heading" });
+    heading.append(
+      el("h2", "我的计划"),
+      el("span", String(result.plans.length), { class: "count" }),
+    );
+    sidebar.replaceChildren(heading);
     if (!result.plans.length)
-      sidebar.append(el("p", "还没有计划。输入目标与基础，创建第一份计划。"));
-    for (const plan of result.plans)
       sidebar.append(
-        button(
-          `${plan.topic} · ${plan.status === "paused" ? "已暂停" : "学习中"}`,
-          () => openPlan(plan.plan_id),
-          { "aria-current": plan.plan_id === selected ? "true" : "false" },
-        ),
+        el("p", "还没有计划。输入目标与基础，创建第一份计划。", {
+          class: "sidebar-empty muted",
+        }),
       );
-    sidebar.append(button("创建计划", createForm));
+    const plans = el("nav", "", {
+      class: "plan-list",
+      "aria-label": "选择学习计划",
+    });
+    for (const plan of result.plans) {
+      const node = button("", () => openPlan(plan.plan_id), {
+        "aria-current": plan.plan_id === selected ? "true" : "false",
+        class: "plan-button",
+        title: plan.topic,
+      });
+      node.append(
+        el("span", plan.topic, { class: "plan-topic" }),
+        el("span", ` · ${plan.status === "paused" ? "已暂停" : "学习中"}`, {
+          class: "plan-status",
+        }),
+      );
+      plans.append(node);
+    }
+    sidebar.append(plans);
+    const footnote = el("div", "", { class: "sidebar-footnote" });
+    footnote.append(
+      el("p", "按自己的节奏，逐章学习。"),
+      el("p", "学习记录会随计划保留。"),
+    );
+    sidebar.append(footnote);
     if (result.truncated)
       sidebar.append(
         el("p", "当前显示最近 50 个计划；可用计划 ID 在聊天查询更早记录。"),
       );
+    if (!initialSelectionDone) {
+      initialSelectionDone = true;
+      if (selected === null && result.plans.length)
+        await openPlan(result.plans[0].plan_id);
+    }
   }
   async function createForm() {
+    initialSelectionDone = true;
     selected = null;
+    for (const node of sidebar.querySelectorAll(".plan-button"))
+      node.setAttribute("aria-current", "false");
     const turn = ++sequence;
     main.replaceChildren(
-      el("h2", "你想学会什么？"),
-      el(
-        "p",
+      viewHeading(
+        "你想学会什么？",
         "计划结合选定资料与可用时间。预计时长包含练习，不能保证按时掌握。",
       ),
       el(
@@ -169,7 +232,7 @@ function mount(surface, context) {
         { class: "retention" },
       ),
     );
-    const form = el("form", "", { class: "form" });
+    const form = el("form", "", { class: "form create-form" });
     const topic = field(form, "学习主题", "", {
       required: "",
       maxlength: "200",
@@ -215,7 +278,10 @@ function mount(surface, context) {
     );
     const checks = [];
     form.append(choices);
-    const submit = el("button", "生成计划", { type: "submit" });
+    const submit = el("button", "生成计划", {
+      type: "submit",
+      class: "primary",
+    });
     submit.disabled = true;
     form.append(submit);
     main.append(form);
@@ -262,7 +328,7 @@ function mount(surface, context) {
   async function openPlan(id) {
     selected = id;
     const turn = ++sequence;
-    main.replaceChildren(el("p", "正在读取学习计划…"));
+    loading(main, "正在读取学习计划");
     const result = await call("get", { plan_id: id });
     if (!valid(id, turn)) return;
     renderPlan(result.plan);
@@ -281,9 +347,23 @@ function mount(surface, context) {
       });
       if (valid(id, turn)) await openPlan(id);
     };
-    main.replaceChildren(
+    const planHeading = el("div", "", { class: "plan-heading" });
+    const title = el("div");
+    title.append(
+      el("p", "当前学习计划", { class: "eyebrow" }),
       el("h2", plan.input.topic),
-      el("p", plan.input.goal),
+      el("p", plan.input.goal, { class: "plan-goal" }),
+    );
+    planHeading.append(
+      title,
+      el("span", plan.status === "paused" ? "已暂停" : "学习中", {
+        class: `status-label ${plan.status}`,
+      }),
+    );
+    main.replaceChildren(planHeading);
+    const background = el("details", "", { class: "background-info" });
+    background.append(
+      el("summary", "已有基础"),
       el("p", `基础：${plan.input.foundation}`),
     );
     const tools = el("div", "", { class: "actions" });
@@ -294,11 +374,38 @@ function mount(surface, context) {
         action(plan.status === "paused" ? "resume" : "pause"),
       ),
     );
+    const completed = plan.chapters.filter(
+      (chapter) => plan.progress[chapter.chapter_id].status === "completed",
+    ).length;
+    const overview = el("dl", "", {
+      class: "plan-overview",
+      "aria-label": "学习进度与时间安排",
+    });
+    for (const [label, value, note] of [
+      [
+        "章节进度",
+        `${completed} / ${plan.chapters.length}`,
+        "你已标记完成的章节",
+      ],
+      ["每天学习", `${plan.input.daily_minutes} 分钟`, "包含讲解与练习"],
+      [
+        "时间安排",
+        `${plan.budget.scheduled_days} / ${plan.input.days} 天`,
+        "已安排 / 计划总天数",
+      ],
+    ]) {
+      const item = el("div");
+      item.append(el("dt", label), el("dd", value), el("p", note));
+      overview.append(item);
+    }
     main.append(
       tools,
+      overview,
+      background,
       el(
         "p",
         `预计 ${plan.budget.estimated_minutes} / 可用 ${plan.budget.available_minutes} 分钟，安排 ${plan.budget.scheduled_days} 天，每天 ${plan.input.daily_minutes} 分钟。`,
+        { class: "budget-description muted" },
       ),
     );
     if (plan.budget.over_budget)
@@ -321,34 +428,86 @@ function mount(surface, context) {
         ),
       );
     const chapters = el("ol", "", { class: "chapters" });
+    const routeHeading = el("div", "", { class: "section-heading" });
+    routeHeading.append(
+      el("h3", "章节路线"),
+      el("span", `${plan.chapters.length} 个章节`, { class: "muted" }),
+    );
+    main.append(routeHeading);
+    const nextChapter =
+      plan.chapters.find(
+        (chapter) =>
+          plan.progress[chapter.chapter_id].status === "in_progress" &&
+          !plan.progress[chapter.chapter_id].needs_confirmation,
+      ) ||
+      plan.chapters.find(
+        (chapter) =>
+          plan.progress[chapter.chapter_id].status === "pending" &&
+          !plan.progress[chapter.chapter_id].needs_confirmation,
+      );
+    let chapterIndex = 0;
     for (const chapter of plan.chapters) {
       const state = plan.progress[chapter.chapter_id],
-        row = el("li");
+        row = el("li", "", {
+          "data-status": state.status,
+          "data-confirmation": String(Boolean(state.needs_confirmation)),
+        });
       row.append(
+        el("span", String(++chapterIndex).padStart(2, "0"), {
+          class: "chapter-number",
+          "aria-hidden": "true",
+        }),
+      );
+      const chapterHeading = el("div", "", { class: "chapter-heading" });
+      chapterHeading.append(
         el("h3", chapter.title),
+        el(
+          "span",
+          state.needs_confirmation
+            ? "待核对"
+            : state.status === "completed"
+              ? "用户已完成"
+              : state.status === "in_progress"
+                ? "进行中"
+                : "待开始",
+          { class: "chapter-state" },
+        ),
+      );
+      row.append(
+        chapterHeading,
         el(
           "p",
           `第 ${chapter.day} 天 · ${chapter.minutes} 分钟 · ${state.status === "completed" ? "用户已标记完成" : state.status === "in_progress" ? "进行中" : "待开始"}`,
+          { class: "chapter-meta" },
         ),
-        el("p", chapter.objective),
+        el("p", chapter.objective, { class: "chapter-objective" }),
       );
       row.append(
         el(
           "p",
           `知识点：${chapter.knowledge_points.join("、")}；${chapter.supplemental ? "建议补充（当前未覆盖）" : "有检索资料支持"}`,
+          { class: "chapter-knowledge muted" },
         ),
       );
       sourceLinks(row, plan.sources, chapter.citation_ids);
       const controls = el("div", "", { class: "actions" });
-      const start = button("开始章节", async () => {
-        const result = await mutation("start", {
-          plan_id: id,
-          chapter_id: chapter.chapter_id,
-        });
-        if (!valid(id, turn)) return;
-        const fresh = await openPlan(id);
-        if (fresh != null && valid(id, fresh)) renderLesson(result.lesson, id);
-      });
+      const start = button(
+        "开始章节",
+        async () => {
+          const result = await mutation("start", {
+            plan_id: id,
+            chapter_id: chapter.chapter_id,
+          });
+          if (!valid(id, turn)) return;
+          const fresh = await openPlan(id);
+          if (fresh != null && valid(id, fresh))
+            renderLesson(result.lesson, id);
+        },
+        {
+          class:
+            chapter.chapter_id === nextChapter?.chapter_id ? "primary" : "",
+        },
+      );
       start.disabled = plan.status === "paused" || state.needs_confirmation;
       controls.append(start);
       if (state.latest_lesson_id)
@@ -444,14 +603,13 @@ function mount(surface, context) {
   function editForm(plan) {
     ++sequence;
     main.replaceChildren(
-      el("h2", "编辑章节"),
-      el(
-        "p",
+      viewHeading(
+        "编辑章节",
         "可以调整顺序、时间和内容。历史讲解与答题仍保留；进行中或已完成内容发生实质变化时需要重新核对。",
       ),
     );
-    const form = el("form"),
-      rows = el("div"),
+    const form = el("form", "", { class: "edit-form" }),
+      rows = el("div", "", { class: "edit-chapters" }),
       drafts = plan.chapters.map(({ day, ...chapter }) => ({ ...chapter }));
     const days = field(form, "总天数（从原计划起始日计算）", plan.input.days, {
       type: "number",
@@ -557,7 +715,7 @@ function mount(surface, context) {
         draw();
       }),
     );
-    const save = el("button", "保存修订", { type: "submit" });
+    const save = el("button", "保存修订", { type: "submit", class: "primary" });
     form.append(
       save,
       button("取消", () => openPlan(plan.plan_id)),
@@ -637,13 +795,16 @@ function mount(surface, context) {
       section.append(el("h3", names[item.kind]), el("p", item.text));
       sourceLinks(section, lesson.sources, item.citation_ids);
     }
-    const questionForm = el("form");
+    const questionForm = el("form", "", { class: "followup-form" });
     const question = field(questionForm, "没看懂？描述希望补充的地方", "", {
       tag: "textarea",
       required: "",
       maxlength: "1000",
     });
-    const explain = el("button", "根据资料补充讲解", { type: "submit" });
+    const explain = el("button", "根据资料补充讲解", {
+      type: "submit",
+      class: "primary",
+    });
     questionForm.append(explain);
     section.append(questionForm);
     questionForm.addEventListener("submit", (event) => {
@@ -683,7 +844,10 @@ function mount(surface, context) {
           required: "",
           maxlength: "2000",
         });
-      const submit = el("button", "提交答案", { type: "submit" }),
+      const submit = el("button", "提交答案", {
+          type: "submit",
+          class: "primary",
+        }),
         feedback = el("div", "", { role: "status" });
       if (lesson.possibly_outdated || main.dataset.planStatus === "paused") {
         answer.disabled = true;
@@ -737,17 +901,26 @@ function mount(surface, context) {
     if (!valid(id, turn) || historySequence !== request) return;
     main.querySelector(".history")?.remove();
     const box = el("section", "", { class: "history" });
-    box.append(
-      el("h2", "学习记录"),
-      button("讲解记录", () => history(id, "lessons")),
-      button("答题记录", () => history(id, "attempts")),
+    const tabs = el("div", "", {
+      class: "actions history-tabs",
+      "aria-label": "记录类型",
+    });
+    tabs.append(
+      button("讲解记录", () => history(id, "lessons"), {
+        "aria-pressed": String(kind === "lessons"),
+      }),
+      button("答题记录", () => history(id, "attempts"), {
+        "aria-pressed": String(kind === "attempts"),
+      }),
     );
+    box.append(el("h2", "学习记录"), tabs);
+    const records = el("div", "", { class: "history-records" });
     if (!result.records.length) box.append(el("p", "当前没有记录。"));
     for (const record of result.records) {
       const when = new Date(
         (record.generated || record.created) * 1000,
-      ).toLocaleString();
-      box.append(
+      ).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+      records.append(
         button(
           `${when} · ${kind === "lessons" ? "查看讲解" : "查看答题与反馈"}`,
           async () => {
@@ -778,27 +951,51 @@ function mount(surface, context) {
         ),
       );
     }
+    box.append(records);
+    const pages = el("div", "", { class: "actions history-pagination" });
     if (offset > 0)
-      box.append(
+      pages.append(
         button("上一页", () => history(id, kind, Math.max(0, offset - 20))),
       );
     if (result.next_offset != null)
-      box.append(button("下一页", () => history(id, kind, result.next_offset)));
+      pages.append(
+        button("下一页", () => history(id, kind, result.next_offset)),
+      );
+    box.append(pages);
     main.append(box);
+    box.scrollIntoView?.({ block: "start" });
   }
-  header.append(
-    el("h1", "学习计划与辅导"),
-    el("p", "沿着资料，按自己的节奏学习。"),
-    button("重新加载", refreshPlans),
+  const intro = el("div", "", { class: "intro-text" });
+  intro.append(
+    el("p", "沿着资料，按自己的节奏学习。", { class: "intro-title" }),
+    el("p", "把目标拆成章节，在讲解与练习中稳步前进。", { class: "muted" }),
   );
-  main.append(
+  const headerActions = el("div", "", { class: "actions" });
+  headerActions.append(
+    button(
+      "重新加载",
+      async () => {
+        await refreshPlans();
+        if (selected) await openPlan(selected);
+      },
+      { class: "quiet" },
+    ),
+    button("创建计划", createForm, { class: "primary" }),
+  );
+  header.append(intro, headerActions);
+  const welcome = el("div", "", { class: "welcome" });
+  welcome.append(
+    el("span", "学习", { class: "welcome-mark", "aria-hidden": "true" }),
     el("h2", "从目标开始"),
-    el("p", "选择已有计划继续学习，或创建一个计划。"),
-    button("创建计划", createForm),
+    el("p", "选择已有计划继续学习，或使用上方的创建计划开始。", {
+      class: "muted",
+    }),
   );
+  main.append(welcome);
   layout.append(sidebar, main);
   root.append(header, notice, layout);
   surface.append(css, root);
+  loading(sidebar, "正在加载学习计划");
   void run(refreshPlans);
   return {
     dispose() {
