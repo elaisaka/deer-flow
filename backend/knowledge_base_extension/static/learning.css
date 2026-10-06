@@ -10,6 +10,25 @@
   width: 100%;
   margin: auto;
 }
+.learning .study-navigation {
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border, #e4e6e5);
+}
+.learning .study-workspace main > :is(form, section, pre, div),
+.learning .study-workspace main > button {
+  margin-bottom: 16px;
+}
+.learning .study-workspace pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  padding: 16px;
+  background: var(--muted, #f4f5f4);
+  border-radius: 8px;
+}
+.learning .study-workspace aside > p {
+  margin: 0 0 12px;
+}
 :host-context(.dark) .learning {
   --study-accent: #bdd3b6;
   --study-accent-text: #18241a;

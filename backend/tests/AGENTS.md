@@ -5,6 +5,13 @@ Backend tests must preserve the runtime invariants they exercise without changin
 ## Windows file organization
 
 Knowledge management regression guidance: `backend/knowledge_base_extension/AGENTS.md`.
+Phase six regression: `test_notes_and_review.py` uses temporary stores, synthetic
+documents, controlled invokers/embeddings and injected calendar clocks. Pin the
+real host CSRF/session/Origin approval floor and actual ToolNode human-message
+provenance, immutable attempts, crash import recovery, revision conflicts and
+daily review dedup. Never read personal files, submit live learner answers,
+approve notes or change production time. Run phase 3-5 regression plus the shared
+RAG source-type/invalidated-dependency checks; keep unrelated gate failures.
 Use synthetic PDFs and temporary stores; never act for the user at confirmation.
 `test_personal_rag.py` tests actual ToolNode identity, atomic generations, source
 permissions and low-priority/no-tool generation. Use controlled embeddings and

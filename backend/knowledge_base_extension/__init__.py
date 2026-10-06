@@ -27,6 +27,19 @@ def owner(principal, *, require_admin=True):
     return principal.user_id
 
 
+def browser_user(request, origins):
+    """Shared human approval floor; host middleware validates the CSRF value."""
+    try:
+        user = owner(resolve_principal(request))
+    except PermissionError:
+        raise HTTPException(403, "Authenticated administrator required") from None
+    if getattr(request.state, "auth_source", None) != "session" or request.headers.get("origin") not in origins:
+        raise HTTPException(403, "An authenticated browser session and explicit Origin are required")
+    if not request.headers.get("x-csrf-token"):
+        raise HTTPException(403, "CSRF token required")
+    return user
+
+
 class KnowledgeService:
     def __init__(self, store, local, rag=None):
         self.store, self.local = store, local
@@ -171,6 +184,9 @@ def browser_router(service, origins):
             return JSONResponse(result, headers={"Cache-Control": "no-store"})
         page = result["location"]["page"]
         metadata = f"文档 {result['document_id']} · 版本 {result['version_id']} · 片段 {result['chunk_id']} · " + (f"PDF 第 {page} 页" if page is not None else "文本，无页码")
+        metadata += " · " + {"user_note": "用户笔记（非独立证据）", "assistant_confirmed_note": "助手生成、用户确认的笔记（非独立证据）"}.get(result.get("source_type"), "原始资料")
+        if result.get("possibly_outdated"):
+            metadata += " · 笔记的原依据已变化或失效；本文是历史学习笔记"
         content = (
             "<!doctype html><html lang='zh'><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>"
             "<title>知识库来源</title><style>body{font:16px/1.6 system-ui;max-width:900px;margin:32px auto;padding:0 20px}"
@@ -180,17 +196,7 @@ def browser_router(service, origins):
         return HTMLResponse(content, headers={"Cache-Control": "no-store", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'", "X-Content-Type-Options": "nosniff"})
 
     def browser(request):
-        principal = resolve_principal(request)
-        try:
-            user = owner(principal)
-        except PermissionError:
-            raise HTTPException(403, "Authenticated administrator required") from None
-        if getattr(request.state, "auth_source", None) != "session" or request.headers.get("origin") not in origins:
-            raise HTTPException(403, "An authenticated browser session and explicit Origin are required")
-        # Host CSRF middleware performs the authoritative validation.
-        if not request.headers.get("x-csrf-token"):
-            raise HTTPException(403, "CSRF token required")
-        return user
+        return browser_user(request, origins)
 
     async def bounded(request, limit):
         raw = bytearray()
@@ -344,6 +350,11 @@ def install(registry, config):
     )
     if registry.plugin(contribution) is not True:
         raise RuntimeError("Full-stack plugin host required")
-    if registry.plugin(learning_contribution(LearningService(service))) is not True:
+    from .study import StudyService, note_router
+
+    learning = LearningService(service)
+    study = StudyService(learning, intervals=config.get("review_intervals", [1, 3, 7, 14]))
+    if registry.plugin(learning_contribution(learning, study)) is not True:
         raise RuntimeError("Full-stack learning plugin host required")
-    registry.routers([browser_router(service, set(config.get("origins", ["http://localhost:2026", "http://127.0.0.1:2026"])))])
+    origins = set(config.get("origins", ["http://localhost:2026", "http://127.0.0.1:2026"]))
+    registry.routers([browser_router(service, origins), note_router(study, origins)])

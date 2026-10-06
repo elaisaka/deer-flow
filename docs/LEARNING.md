@@ -3,7 +3,9 @@
 2026-10-05：学习服务、独立页面与聊天工具在现有知识扩展中实现，共享一套知识库、
 SQLite、RAG、引用和模型授权。自动验证见文末；真实模型开发栈已部分验收，完整
 真人闭环按文末逐项记录，未完成部分不能算通过。
-第 6 阶段的笔记入库、错题本、间隔复习和通知未开发，答题仅保存为学习记录。
+第 6 阶段已在相同扩展中增加笔记草稿/真人确认入库、错题复核与重练、规则复习，
+见 [NOTES_AND_REVIEW.md](NOTES_AND_REVIEW.md)。原答题和反馈保持不可变，
+重练复用同一评分函数并新增 attempt，不自动改变学习进度。外部通知未开发。
 
 ## 学习页面布局
 
@@ -249,6 +251,11 @@ ToolNode、宿主 inline schema 子进程和页面权限。覆盖输入/时区�
 
 独立 Windows 测试环境为 `.deer-flow/learning-dev-venv`，uv.lock 安装；原
 backend/.venv 是 Linux 环境。私有配置包含 Docker 路径，离线门禁显式用公开示例：
+
+下方保留第 5 阶段的历史命令。第 6 阶段发现仅指定公开配置仍可能与 Docker 的
+默认 SQLite 路径重合；现在不要在运行中服务的 backend 目录执行下面的全后端
+命令，应使用 [NOTES_AND_REVIEW.md](NOTES_AND_REVIEW.md) 的独立纯源码副本、
+项目根目录和运行目录隔离步骤。专项通过不替代完整门禁结果。
 
 ```powershell
 Set-Location E:\111\deer-flow\backend

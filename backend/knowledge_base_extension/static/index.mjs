@@ -805,7 +805,7 @@ function mount(surface, context) {
             el("h4", evidence.document_name),
             el(
               "p",
-              `版本 ${evidence.version_id} · 片段 ${evidence.chunk_id} · ${location} · 相似度 ${evidence.score}`,
+              `版本 ${evidence.version_id} · 片段 ${evidence.chunk_id} · ${location} · 相似度 ${evidence.score} · ${{ user_note: "用户笔记（非独立证据）", assistant_confirmed_note: "助手生成、用户确认的笔记（非独立证据）" }[evidence.source_type] || "原始资料"}${evidence.possibly_outdated ? " · 原依据可能过时" : ""}`,
               { class: "muted" },
             ),
             el("pre", evidence.text, { class: "content-text" }),

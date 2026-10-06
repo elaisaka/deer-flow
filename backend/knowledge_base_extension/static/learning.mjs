@@ -1,5 +1,7 @@
 // Taste redesign-preserve: DESIGN_VARIANCE 4 / MOTION_INTENSITY 2 / VISUAL_DENSITY 5.
 // Native product surface: inherit the host theme and preserve learning contracts.
+import { mountStudy } from "./study.mjs";
+
 function mount(surface, context) {
   const errors = {
     index_not_ready: "所选库有资料尚未索引或索引失败，请先在知识库页面处理。",
@@ -40,11 +42,30 @@ function mount(surface, context) {
     crossorigin: "use-credentials",
   });
   const root = el("div", "", { class: "learning" });
+  const studyNavigation = el("nav", "", {
+    class: "actions study-navigation",
+    "aria-label": "学习与知识管理",
+  });
   const header = el("header", "", { class: "intro" }),
     layout = el("div", "", { class: "layout" });
   const sidebar = el("aside", "", { "aria-label": "学习计划" }),
     main = el("main", "", { "aria-label": "学习工作区" });
   const notice = el("p", "", { role: "alert", class: "notice", hidden: "" });
+  studyNavigation.append(
+    buttonLater("学习计划", () => {
+      study.hide();
+      layout.hidden = false;
+      header.hidden = false;
+    }),
+    buttonLater("笔记", () => study.show("notes")),
+    buttonLater("错题", () => study.show("mistakes")),
+    buttonLater("复习", () => study.show("reviews")),
+  );
+  function buttonLater(label, fn) {
+    const node = el("button", label, { type: "button", class: "quiet" });
+    node.addEventListener("click", () => void fn());
+    return node;
+  }
   const requests = new Map();
   let active = true,
     selected = null,
@@ -151,7 +172,7 @@ function mount(surface, context) {
           link,
           el(
             "span",
-            ` 版本 ${source.version_id} / ${source.location.page == null ? "文本" : `第 ${source.location.page} 页`}`,
+            ` 版本 ${source.version_id} / ${source.location.page == null ? "文本" : `第 ${source.location.page} 页`} · ${{ user_note: "用户笔记（非独立证据）", assistant_confirmed_note: "助手笔记（非独立证据）" }[source.source_type] || "原始资料"}`,
           ),
         );
       } else
@@ -791,6 +812,11 @@ function mount(surface, context) {
       example: "例子",
       check: "简短检查",
     };
+    section.append(
+      button("从此讲解生成笔记草稿", () =>
+        study.draftFromLesson(id, lesson.lesson_id),
+      ),
+    );
     for (const item of lesson.sections) {
       section.append(el("h3", names[item.kind]), el("p", item.text));
       sourceLinks(section, lesson.sources, item.citation_ids);
@@ -883,6 +909,15 @@ function mount(surface, context) {
               el("p", result.attempt.evaluation_notice, { class: "retention" }),
             );
           sourceLinks(feedback, result.attempt.sources);
+          if (
+            result.attempt.kind === "short_answer" ||
+            result.attempt.score === 0
+          )
+            feedback.append(
+              button("建议收录或复核此题", () =>
+                study.suggest(id, result.attempt.attempt_id),
+              ),
+            );
           answer.disabled = true;
           submit.hidden = true;
           await refreshAfterAnswer(id, turn);
@@ -946,6 +981,15 @@ function mount(surface, context) {
                 }),
               );
             sourceLinks(node, detail.attempt.sources);
+            if (
+              detail.attempt.kind === "short_answer" ||
+              detail.attempt.score === 0
+            )
+              node.append(
+                button("建议收录或复核此题", () =>
+                  study.suggest(id, detail.attempt.attempt_id),
+                ),
+              );
             box.append(node);
           },
         ),
@@ -993,7 +1037,13 @@ function mount(surface, context) {
   );
   main.append(welcome);
   layout.append(sidebar, main);
+  root.prepend(studyNavigation);
   root.append(header, notice, layout);
+  const study = mountStudy(root, context, () => {
+    layout.hidden = true;
+    header.hidden = true;
+    notice.hidden = true;
+  });
   surface.append(css, root);
   loading(sidebar, "正在加载学习计划");
   void run(refreshPlans);
@@ -1003,6 +1053,7 @@ function mount(surface, context) {
       sequence++;
       listSequence++;
       requests.clear();
+      study.dispose();
       root.remove();
       css.remove();
     },

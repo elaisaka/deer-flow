@@ -33,6 +33,20 @@ Model answers must match host original human text and run, never payload claims.
 Short-answer reviews in `feedback.py` require literal learner/evidence grounding,
 independent bounded audit and program-derived verdicts; flag legacy feedback.
 Run `test_learning.py` and frontend `node --test tests/learning-ui.test.mjs`.
+Phase six uses `study.py` / `static/study.mjs` in this same learning namespace.
+Read `docs/NOTES_AND_REVIEW.md`; no second library or exercise store. Note approval
+is a session/Origin/CSRF route binding revision, target and content digest, never
+a ModelTool/backend action. Edits invalidate approval; durable publishing intents
+recover imports by note/revision metadata before retry. Keep note source types
+through retrieval/citations/teaching; derivatives are not independent evidence.
+Live-check original dependencies, stop stale grading, retain histories. Generated
+notes reject bounded learner-mastery claims; this is not a semantic quality audit.
+Mistakes only suggest review for short answers. Actual human answers append shared
+attempts, without plan progress changes. Review dates use stored timezone/rule
+snapshots and unique object/local-day results; no tool self-assesses or advances.
+Run `test_notes_and_review.py` and frontend `tests/study-ui.test.mjs` too. Preserve
+unsaved inputs/retry keys and fence tab/object responses; never approve or answer
+for the user during live acceptance. Deleting a note retains the library copy.
 The learning UI inherits host theme tokens with a shared sage accent, scoped to
 `.learning`. Keep one creation entry and all original field labels/order. Open
 the first plan once on initial load, without starting a chapter or saving data;
