@@ -103,8 +103,9 @@ Get-Content -Raw "$env:LOCALAPPDATA\DeerFlow\local-files-phase2\approval-code.tx
 
 整理的 Windows 固定 HTTP 接口为 `POST /v1/organization/{preview,get,list,execute,cancel,undo,confirm}`。全部要求原 Bearer 操作令牌；只有 `confirm` 额外要求 `X-File-Approval-Token`。不提供任意 Shell、任意下载或原文件删除接口。请求正文最大 8192 字节。
 
-第 3 阶段复用该真人确认密钥，知识库更新/删除仍要求用户亲自输入并点击独立页面；
-新增 `/v1/import/read` 只传输选定的支持格式，`/v1/knowledge/confirm` 只校验本次摘要。
+第 3 阶段知识库更新/删除目前使用管理员浏览器 session/Origin/CSRF 按钮确认，
+无需 Windows 确认密钥；文件整理仍由本人输入独立密钥批准版本和摘要。
+`/v1/import/read` 只传输选定格式；旧 `/v1/knowledge/confirm` 是兼容端点，当前库页面不调用。
 知识库删除仅清理 Docker 资料副本，Windows 原文件不删除；不影响整理计划版本与撤销。
 新接口需重启 Windows 服务，原私有配置与桥接 9 工具不变，见 [KNOWLEDGE_BASE.md](KNOWLEDGE_BASE.md)。
 

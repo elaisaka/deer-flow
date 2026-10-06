@@ -155,6 +155,11 @@ export function mountStudy(surface, context, onNavigate = () => {}) {
     onNavigate(kind);
     notice.hidden = true;
     const p = pane(kind);
+    if (!p.list.childNodes.length)
+      p.list.append(
+        el("p", "正在加载记录…"),
+        button("重新加载列表", () => loadList(kind), { class: "quiet" }),
+      );
     content.replaceChildren(p.node);
     await run(() => loadList(kind));
   }

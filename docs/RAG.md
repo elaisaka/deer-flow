@@ -1,5 +1,9 @@
 # 第 4 阶段：个人知识库 RAG
 
+第 7 阶段当前提交 CI、独立完整门禁和固定评测见 [ACCEPTANCE.md](ACCEPTANCE.md)。
+可重复合成流程及开发者初评/真人评分的独立汇总格式见 [DEMO.md](DEMO.md)。
+下文保留当时结果，不以新成功记录覆盖旧失败。学习和笔记已由后续扩展实现。
+
 第 6 阶段沿用本管线，笔记版本保留来源类型和原依据定位。检索 evidence、引用原文
 页/JSON、问答和学习讲解区分 original_document、user_note、assistant_confirmed_note；
 两类笔记不是独立证据。原依据变化时标明 possibly_outdated，保留历史笔记而停止

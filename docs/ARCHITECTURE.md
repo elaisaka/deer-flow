@@ -1,5 +1,8 @@
 # DeerFlow Architecture
 
+For this repository's personal-assistant extensions and contribution boundaries, see
+[Personal Assistant Architecture](PERSONAL_ASSISTANT_ARCHITECTURE.md). This document retains the upstream framework overview.
+
 This document is the **top-level architecture overview** for DeerFlow. It explains the
 "big picture" — how the services, layers, and cross-cutting subsystems fit together — and
 points to the module-level guides that own the depth:

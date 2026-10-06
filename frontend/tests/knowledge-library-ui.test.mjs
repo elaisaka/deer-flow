@@ -416,3 +416,54 @@ test("delete confirmation sends the original preview digest only after an explic
     f.cleanup();
   }
 });
+
+for (const route of ["local", "upload"]) {
+  test(`duplicate ${route} import keeps a visible result beside selected document`, async () => {
+    const f = await fixture();
+    const previousFetch = globalThis.fetch;
+    try {
+      if (route === "local") {
+        await f.click("从 Windows 授权目录选取文件");
+        await f.click("导入 redis.txt");
+      } else {
+        document.cookie = "csrf_token=synthetic-token";
+        globalThis.fetch = async () => ({
+          ok: true,
+          json: async () => ({
+            ok: true,
+            status: "duplicate",
+            document_id: "doc-a",
+            version_id: "version-a",
+          }),
+        });
+        const input = f.surface.querySelector('input[type="file"]');
+        Object.defineProperty(input, "files", {
+          value: [new f.window.File(["synthetic"], "redis.txt")],
+          configurable: true,
+        });
+        await f.click("导入上传文件");
+      }
+      const result = f.surface.querySelector(
+        '.detail-panel .import-result[role="status"]',
+      );
+      assert.ok(
+        result,
+        "Import feedback must remain beside the selected document after refresh",
+      );
+      assert.equal(result.hidden, false);
+      assert.match(result.textContent, /重复导入.*复用已有版本.*未新增文档/);
+      assert.match(
+        f.surface.querySelector(".notice.feedback").textContent,
+        /重复导入/,
+      );
+      await f.click("第二个知识库");
+      assert.equal(
+        f.surface.querySelector(".detail-panel .import-result"),
+        null,
+      );
+    } finally {
+      globalThis.fetch = previousFetch;
+      f.cleanup();
+    }
+  });
+}

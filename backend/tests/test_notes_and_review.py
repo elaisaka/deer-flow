@@ -260,6 +260,42 @@ async def test_review_calendar_overdue_daily_dedup_pause_and_restart_persistence
 
 
 @pytest.mark.asyncio
+async def test_quiescent_full_store_backup_restores_learning_notes_mistakes_reviews(setup, tmp_path):
+    import shutil
+
+    s, _, host, base, doc, plan, lesson, clock = setup
+    note = await draft(setup, True)
+    note = (await s.approve_note("alice", await approval(setup, note)))["note"]
+    host.rag.index_document("alice", note["document_id"])
+    attempt, mistake = await wrong(setup)
+    review = (await action(s, "reviews_schedule", {"request_id": uuid4().hex, "kind": "note", "target_id": note["note_id"], "timezone": "Asia/Shanghai"}))["review"]
+    finish_payload = {"request_id": uuid4().hex, "review_id": review["review_id"], "expected_revision": review["revision"], "target_revision": note["revision"], "result": "continue", "attempt_id": None}
+    review = (await action(s, "reviews_finish", finish_payload))["review"]
+    with host.store.transaction() as db:
+        tables = [r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
+        before = {table: [tuple(row) for row in db.execute(f'SELECT * FROM "{table}" ORDER BY rowid')] for table in tables}
+    # Controlled invokers have no outstanding jobs, all connections are closed.
+    backup, restored_root = tmp_path.parent / (tmp_path.name + "-backup"), tmp_path.parent / (tmp_path.name + "-restored")
+    shutil.copytree(tmp_path, backup)
+    shutil.copytree(backup, restored_root)
+    restored_host = KnowledgeService(KnowledgeStore(restored_root), None)
+    restored_host.rag = RAGIndex(restored_host.store, RAGConfig(), Embedding())
+    restored = StudyService(LearningService(restored_host), clock=lambda: clock.now)
+    with restored_host.store.transaction() as db:
+        assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+        assert {table: [tuple(row) for row in db.execute(f'SELECT * FROM "{table}" ORDER BY rowid')] for table in tables} == before
+    assert (await action(restored, "notes_get", {"note_id": note["note_id"]}))["note"]["revision"] == note["revision"]
+    assert (await action(restored, "mistakes_get", {"mistake_id": mistake["mistake_id"]}))["mistake"]["attempt_id"] == attempt["attempt_id"]
+    assert (await action(restored, "reviews_get", {"review_id": review["review_id"]}))["review"]["due_date"] == review["due_date"]
+    assert (await action(restored, "reviews_get", {"review_id": review["review_id"]}))["review"]["history"] == review["history"]
+    assert restored_host.rag.citation("alice", lesson["sources"][0]["citation_id"])
+    assert restored_host.rag.search("alice", [base], "RDB")["evidence"]
+    for source in (tmp_path / "objects").rglob("*"):
+        if source.is_file():
+            assert source.read_bytes() == (restored_root / source.relative_to(tmp_path)).read_bytes()
+
+
+@pytest.mark.asyncio
 async def test_no_approve_self_assessment_or_collection_model_tools(setup):
     names = {t.name for t in model_tools(setup[0])}
     assert names >= {"notes_draft", "notes_list", "mistakes_suggest", "reviews_start", "reviews_submit"}

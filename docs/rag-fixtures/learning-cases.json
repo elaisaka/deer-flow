@@ -1,0 +1,16 @@
+{
+  "version": "synthetic-redis-feedback-v1",
+  "purpose": "Developer comparison samples only. Not real learner answers or a claim of grading accuracy.",
+  "question": "排行榜与去重标签分别适合哪种 Redis 数据类型？说明成员、分数与顺序的区别。",
+  "evidence": [["types.md", "TYPE-1"], ["types.md", "TYPE-2"]],
+  "cases": [
+    {"id": "correct", "answer": "排行榜用 Sorted Set，成员关联分数并按分数排序；去重标签用 Set，保存不重复成员。", "expected_reference_evaluation": "satisfactory", "criterion": "分别检查两个场景与类型特征；不能据此宣称掌握"},
+    {"id": "wrong", "answer": "排行榜与去重都用 String，因为 String 自动为全部成员排序并去重。", "expected_reference_evaluation": "needs_work", "criterion": "错误类型选择与虚构自动排序/去重必须指出"},
+    {"id": "swapped", "answer": "Set 将成员与分数关联并按分数排序，Sorted Set 用于不重复成员，所以排行榜用 Set，去重标签用 Sorted Set。", "expected_reference_evaluation": "needs_work", "criterion": "包含正确关键词也不能忽略主体/属性颠倒"},
+    {"id": "partial", "answer": "排行榜用 Sorted Set。", "expected_reference_evaluation": "needs_work", "criterion": "第一点部分正确，但缺少去重标签、成员与分数的解释；不当作完全正确"},
+    {"id": "unsupported", "answer": "我的机器上排行榜的性能一定高于另一种实现一百倍。", "expected_reference_evaluation": "insufficient_evidence", "criterion": "改问该机器的实测性能；固定资料无测量数据，不能强制判分或编造数字", "question_override": "根据所选资料核对本机排行榜的实测性能提升幅度。"},
+    {"id": "stale", "answer": "排行榜用 Sorted Set；去重标签用 Set。", "expected_error": "learning_source_changed", "criterion": "仅在独立临时 store 中使依据版本失效后核对；停止评分、不发模型请求、不保存 attempt"}
+  ],
+  "human_review": null,
+  "billing": null
+}

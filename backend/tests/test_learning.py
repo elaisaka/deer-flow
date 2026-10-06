@@ -150,15 +150,16 @@ async def test_swapped_types_audit_overrides_false_positive_without_source_snaps
     result = await call(s, "submit", args)
     attempt = result["attempt"]
     assert attempt["evaluation"] == "needs_work" and attempt["score"] is None
-    assert attempt["grading_version"] == 2 and "对调" in attempt["feedback"]
+    assert attempt["grading_version"] == 3 and "对调" in attempt["feedback"]
     assert all("evidence_quote" not in c for c in attempt["feedback_checks"])
     assert [r.purpose for r in host.invoker.calls] == ["learning-feedback", "learning-feedback-audit"]
     assert (await call(s, "submit", args))["attempt"]["attempt_id"] == attempt["attempt_id"]
     assert len(host.invoker.calls) == 2
 
     with host.store.transaction() as db:
-        legacy = s._public_attempt(db, "alice", {**attempt, "grading_version": 1})
-    assert "可能误判" in legacy["evaluation_notice"]
+        for version in (1, 2):
+            legacy = s._public_attempt(db, "alice", {**attempt, "grading_version": version})
+            assert "可能误判" in legacy["evaluation_notice"]
     assert legacy["feedback"] == attempt["feedback"]
 
 

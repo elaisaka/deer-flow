@@ -3,6 +3,7 @@
 import argparse
 import json
 import statistics
+import time
 from pathlib import Path
 
 from .rag import EmbeddingClient, RAGConfig, RAGIndex
@@ -31,7 +32,11 @@ class OfflineConceptEmbedding:
         return [[float(any(term in text.lower() for term in terms)) for terms in self.concepts] + [0.0001] for text in texts]
 
 
-def benchmark(output, *, mode="offline", embedding_config=None, allow_service_calls=False):
+def benchmark(output, *, mode="offline", embedding_config=None, allow_service_calls=False, answerer=None, answer_case_ids=None):
+    # Callers supply the existing grounded-answer service, never an evaluator's
+    # own generator/scorer. Opt-in applies even to controlled test callbacks.
+    if answerer is not None and not allow_service_calls:
+        raise ValueError("Recorded answers require explicit service-call opt-in")
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     if any(output.iterdir()):
@@ -58,6 +63,9 @@ def benchmark(output, *, mode="offline", embedding_config=None, allow_service_ca
     for doc in documents.values():
         rag.index_document(owner, doc["document_id"])
     dataset = json.loads((FIXTURES / "questions.json").read_text(encoding="utf-8"))
+    selected_answers = set(answer_case_ids) if answer_case_ids is not None else {case["id"] for case in dataset["cases"]}
+    if selected_answers - {case["id"] for case in dataset["cases"]}:
+        raise ValueError("Unknown answer case ID")
     results, recalls, hits, durations, no_answer = [], [], [], [], []
     old_references = []
     for case in dataset["cases"]:
@@ -100,6 +108,18 @@ def benchmark(output, *, mode="offline", embedding_config=None, allow_service_ca
                     sample["delete"]["old_citations_unavailable"].append(False)
                 except Exception as error:
                     sample["delete"]["old_citations_unavailable"].append(str(error) == "source_unavailable")
+        if answerer is not None and case["id"] in selected_answers:
+            started = time.monotonic()
+            try:
+                answer = answerer(rag, owner, [base], case)
+                if not isinstance(answer, dict) or not isinstance(answer.get("answer"), str) or not answer["answer"] or len(json.dumps(answer, ensure_ascii=False).encode("utf-8")) > 48 * 1024:
+                    raise ValueError("Invalid recorded answer")
+                sample["answer"] = answer["answer"]
+                sample["answer_result"] = answer
+            except Exception as error:
+                # No provider debug output, credentials or failed partial text.
+                sample["answer_error_type"] = type(error).__name__
+            sample["answer_elapsed_ms"] = round((time.monotonic() - started) * 1000, 3)
         results.append(sample)
     summary = {
         "mode": mode,
@@ -121,6 +141,8 @@ def benchmark(output, *, mode="offline", embedding_config=None, allow_service_ca
         "retrieval_ms_median": statistics.median(durations),
         "retrieval_ms_max": max(durations),
         "answer_correctness": None,
+        "recorded_answers": sum(sample["answer"] is not None for sample in results),
+        "failed_answers": sum("answer_error_type" in sample for sample in results),
         "citation_support": None,
         "no_answer_response_handling": None,
         "service_cost": None,

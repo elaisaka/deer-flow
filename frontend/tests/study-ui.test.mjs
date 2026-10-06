@@ -60,6 +60,23 @@ async function fixture(overrides = {}) {
     },
   };
 }
+test("first list failure keeps a visible reload path and recovers", async () => {
+  let first = true;
+  const f = await fixture({
+    notes_list: () => {
+      if (first) {
+        first = false;
+        throw Error("synthetic unavailable");
+      }
+      return { notes: [note] };
+    },
+  });
+  await f.controller.show("notes");
+  assert.match(f.surface.textContent, /synthetic unavailable/);
+  await f.click("重新加载列表");
+  assert.match(f.surface.textContent, /合成笔记/);
+  f.dispose();
+});
 test("unsaved note stays across tabs and failed retry keeps idempotency key", async () => {
   const f = await fixture({
     notes_edit: () => ({

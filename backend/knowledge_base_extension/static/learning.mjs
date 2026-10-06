@@ -850,7 +850,10 @@ function mount(surface, context) {
     });
     section.append(
       el("h3", "练习"),
-      el("p", "请亲自作答。简答反馈是参考评价，提交后不会自动标记完成。"),
+      el(
+        "p",
+        "请亲自作答。简答反馈是参考评价，可能误判；请核对原文。提交后不会自动标记完成或掌握。",
+      ),
     );
     for (const exercise of lesson.exercises) {
       const form = el("form", "", { class: "exercise" });

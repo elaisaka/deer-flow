@@ -21,7 +21,8 @@ function mount(surface, context) {
     sequence = 0,
     listSequence = 0,
     baseSequence = 0,
-    polling = null;
+    polling = null,
+    lastImport = null;
   let catalog = [];
   const currentBase = () =>
     catalog.find((item) => item.knowledge_base_id === base);
@@ -156,10 +157,20 @@ function mount(surface, context) {
       node.append(el("div", "", { class: "skeleton" }));
     parent.replaceChildren(node);
   };
-  const reportImport = (result) =>
+  const reportImport = (result) => {
+    lastImport = {
+      base,
+      documentId: result.document_id,
+      versionId: result.version_id,
+      message:
+        result.status === "duplicate"
+          ? "最近一次导入结果：重复导入，复用已有版本，未新增文档。"
+          : `最近一次导入结果：${statusLabel[result.status] || result.status}${result.error ? ` · 错误：${result.error}` : ""}`,
+    };
     announce(
       `${result.status === "duplicate" ? "重复导入，复用已有版本" : `导入结果：${result.status}`} · document_id: ${result.document_id} · version_id: ${result.version_id}${result.error ? ` · 错误：${result.error}` : ""}`,
     );
+  };
   const header = el("header", "", { class: "intro" });
   const introText = el("div");
   introText.append(
@@ -419,6 +430,18 @@ function mount(surface, context) {
     if (!valid(chosen, turn)) return;
     details.replaceChildren();
     detailHeader(result.name);
+    if (
+      lastImport?.base === chosen &&
+      lastImport.documentId === id &&
+      lastImport.versionId === result.current_version_id
+    )
+      details.append(
+        el("p", lastImport.message, {
+          class: "notice feedback import-result",
+          role: "status",
+          "aria-live": "polite",
+        }),
+      );
     const info = el("dl", "", { class: "metadata" });
     metadata("文档 ID", id, info);
     metadata("当前修订", result.revision, info);

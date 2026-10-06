@@ -13,7 +13,7 @@ from uuid import uuid4
 
 from deerflow_extension_api.model_invocation import ModelInvocationError, ModelInvocationRequest, ModelMessage
 
-from .feedback import GRADING_POLICY, feedback_result, grounded_checks
+from .feedback import GRADING_POLICY, GRADING_VERSION, feedback_result, grounded_checks
 from .learning_models import Edit, Feedback, LearningInput, Lesson, Proposal, TimeBudget, evidence_schema, inline_schema, learning_input, schedule, validate
 from .store import KnowledgeError, identifier
 
@@ -123,7 +123,9 @@ class LearningService:
         sources = self._sources(db, user, attempt["sources"])
         result = {k: v for k, v in {**attempt, "sources": sources, "possibly_outdated": any(s["status"] != "valid" for s in sources), "retention_notice": RETENTION}.items() if k != "answer_origin"}
         if attempt["kind"] == "short_answer":
-            result["evaluation_notice"] = "旧版参考评价未经逐条答案核对，可能误判；请对照原文重新作答复核。原记录保留。" if attempt.get("grading_version") != 2 else "这是模型参考核对，仍可能误判；请检查学生原句、具体差异与引用。"
+            result["evaluation_notice"] = (
+                "旧版参考评价可能误判，包括把未明确的共享属性判成错误；请对照原文重新作答复核。原记录保留。" if attempt.get("grading_version") != GRADING_VERSION else "这是模型参考核对，仍可能误判；请检查学生原句、具体差异与引用。"
+            )
         return result
 
     def _view(self, db, user, refs):

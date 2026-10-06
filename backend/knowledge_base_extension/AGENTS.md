@@ -12,6 +12,11 @@ Run browser-module DOM regressions from `frontend/` with
 
 Read `docs/KNOWLEDGE_BASE.md` and `docs/RAG.md`. Use public extension contracts,
 owner-bound IDs, one SQLite + immutable copies in the configured data volume.
+Phase-seven results live in `docs/ACCEPTANCE.md`; reproduce with `docs/DEMO.md`.
+Keep human and developer reviews separate, missing answers ungraded, and test
+snapshots free of private config/data. Demo preparation refuses existing files.
+Agent reviews use reviewer_kind=agent and human_verified=false. List loading
+must retain a visible retry control when the first request fails.
 RAG indexes only current ready parsed versions; parse ready is not index ready.
 Explicit scopes and trusted run identity are mandatory; recheck ownership,
 versions, tombstones and config/generation after embedding. No silent fallback.
@@ -32,6 +37,8 @@ server-only. Live-check source locators. No tool marks completion/mastery.
 Model answers must match host original human text and run, never payload claims.
 Short-answer reviews in `feedback.py` require literal learner/evidence grounding,
 independent bounded audit and program-derived verdicts; flag legacy feedback.
+An exact-claim audit uncertainty withdraws unsupported negatives, never separate
+errors. Shared properties are not exclusive; literal grounding is not truth.
 Run `test_learning.py` and frontend `node --test tests/learning-ui.test.mjs`.
 Phase six uses `study.py` / `static/study.mjs` in this same learning namespace.
 Read `docs/NOTES_AND_REVIEW.md`; no second library or exercise store. Note approval
@@ -45,8 +52,10 @@ Mistakes only suggest review for short answers. Actual human answers append shar
 attempts, without plan progress changes. Review dates use stored timezone/rule
 snapshots and unique object/local-day results; no tool self-assesses or advances.
 Run `test_notes_and_review.py` and frontend `tests/study-ui.test.mjs` too. Preserve
-unsaved inputs/retry keys and fence tab/object responses; never approve or answer
-for the user during live acceptance. Deleting a note retains the library copy.
+unsaved inputs/retry keys and fence tab/object responses. User-authorized agent
+acceptance may approve/answer only for dedicated synthetic test records through
+normal authenticated routes; label it agent acceptance, never human evidence.
+Preserve product confirmation gates. Deleting a note retains the library copy.
 The learning UI inherits host theme tokens with a shared sage accent, scoped to
 `.learning`. Keep one creation entry and all original field labels/order. Open
 the first plan once on initial load, without starting a chapter or saving data;

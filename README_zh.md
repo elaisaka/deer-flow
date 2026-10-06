@@ -2,13 +2,21 @@
 
 [English](./README.md) | 中文
 
-> 本独立仓库基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发，规划个人文件整理、RAG 与学习助手功能，详见[项目范围](docs/PROJECT_SCOPE.md)。第一阶段已通过 Docker 聊天验收授权目录查询、列表和真实新建文件夹，见[本地文件服务指南](docs/LOCAL_FILE_SERVICE.md)。第二阶段沿用该服务，新增确定性整理预览、版本确认、持久化逐项记录及有条件撤销；开发栈已通过真人确认、真实分类、聊天撤销和重启查询，测试限制见[文件整理指南](docs/FILE_ORGANIZATION.md)。学习功能仍待开发，下文保留上游功能说明。
+> 本独立仓库基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发，保留上游许可证、版权和历史。六个阶段已实现 Windows 文件整理、版本化知识库与 RAG、学习计划辅导、笔记错题与复习，优先通过扩展实现。当前是本地开发版，真人验收与模型质量有明确缺口，下文保留上游框架说明，不将上游能力计为个人贡献。
+
+从[干净环境启动与合成 Demo](docs/DEMO.md)、[当前验收矩阵和 CI](docs/ACCEPTANCE.md)、[个人模块架构](docs/PERSONAL_ASSISTANT_ARCHITECTURE.md)和[项目范围](docs/PROJECT_SCOPE.md)开始。入口 `http://localhost:2026`，登录后选择“个人知识库”“学习计划”或“文件整理”。Docker 应用、Windows 有限文件服务、embedding 服务分别启动；答题、批准和复习自评由本人操作。无 OCR、联网收集或外部通知，不宣称生产部署及普遍准确率通过。
+
+第 7 阶段核对了当前基线 CI、隔离环境门禁和真实模型固定评测，新增合成 Demo、
+备份/恢复说明及验收矩阵。简答复核的不确定性合并已修复，但真实模型共享性质
+误判仍未解决。用户授权后的代理验收已补做笔记重新批准/新原文点击、自评、
+简答重练及重启/合成恢复；不能将代理评分作为真人评分或宣称全部无问题。
+详见 [四项收尾结果](docs/CLOSEOUT.md)及[历史验收记录](docs/ACCEPTANCE.md)。
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](./backend/pyproject.toml)
 
 第三阶段新增[个人知识库资料管理扩展](docs/KNOWLEDGE_BASE.md)：PDF/Markdown/TXT 导入、来源和解析状态、内容去重、稳定文档版本、真人确认更新及删除知识库副本。更新和删除均通过浏览器按钮确认，无需 Windows 密钥；文件整理仍使用独立确认机制。实际验收进度与未验证项目见指南。
 
-第四阶段在同一 SQLite 资料库中新增当前版本向量索引、明确范围检索、无执行工具的证据问答、受权限控制的原文引用和 24 问合成 Redis 评测。知识库页面支持逐篇索引、重试/重建及片段测试。开发栈已用本地 Ollama bge-m3 完成真实索引、聊天、真人更新/删除及重启验证；19 个可回答合成问题 Recall@6 为 1.0。完整回答/引用人工评分、生产栈与实际账单仍未验证。启动、聊天指令、实际门禁与历史片段保留策略见 [RAG 指南](docs/RAG.md)。学习计划、笔记和错题尚未开发。
+第四阶段在同一 SQLite 资料库中新增当前版本向量索引、明确范围检索、无执行工具的证据问答、受权限控制的原文引用和 24 问合成 Redis 评测。知识库页面支持逐篇索引、重试/重建及片段测试。开发栈已用本地 Ollama bge-m3 完成真实索引、聊天、真人更新/删除及重启验证；19 个可回答合成问题 Recall@6 为 1.0。完整回答/引用真人评分、生产栈与实际账单仍未验证，本轮开发者初评另见验收矩阵。启动、聊天指令、实际门禁与历史片段保留策略见 [RAG 指南](docs/RAG.md)。学习计划、笔记和错题已在后续阶段实现。
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](./Makefile)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
