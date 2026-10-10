@@ -496,6 +496,7 @@ Windows 服务终端按 Ctrl+C。不要使用 `down -v` 作为普通停止命令
 | [合成 Demo 与运行手册](docs/DEMO.md) | 示例资料、完整操作、备份与恢复 |
 | [当前验收矩阵](docs/ACCEPTANCE.md) | 自动验证、服务验收与未完成项 |
 | [收尾结果](docs/CLOSEOUT.md) | 后续补验及已知模型问题 |
+| [仓库精简记录](docs/REPOSITORY_CLEANUP.md) | 已移除的上游资料、保留理由及历史恢复入口 |
 | [上游宿主配置](backend/docs/CONFIGURATION.md) | 模型、沙箱及通用配置 |
 | [认证设计](backend/docs/AUTH_DESIGN.md) | 登录、管理员、来源与 CSRF |
 | [贡献指南](CONTRIBUTING.md) | 通用开发规范 |

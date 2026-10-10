@@ -131,7 +131,7 @@ covers sync/async parallel capacity, receipts, full/delta checkpoints, reverse
 completion order, repeated keys, deletion followed by retry, and task isolation
 without calling a live model API.
 
-[The historical experiment package](experiments/task-continuity-20260912/README.md)
+[The historical experiment package](https://github.com/elaisaka/deer-flow/blob/387e70a5688447b3aa4345e9cc01daedebdb614f/docs/experiments/task-continuity-20260912/README.md)
 contains the original A/B/C/D protocol, scripts and results. Those numbers describe
 an independent replay prototype under forced compression, not this production
 implementation or complete DeerFlow baseline behavior. Its vector-versus-keyword
@@ -156,4 +156,4 @@ actual correct JSON manifest. This verifies controlled recovery mechanics; it is
 not a production acceptance rate, deployment check or quality benchmark.
 
 The completed checks and exact clean-base comparison are recorded in
-[implementation validation](experiments/task-continuity-20260912/VALIDATION.md).
+[implementation validation](https://github.com/elaisaka/deer-flow/blob/387e70a5688447b3aa4345e9cc01daedebdb614f/docs/experiments/task-continuity-20260912/VALIDATION.md).

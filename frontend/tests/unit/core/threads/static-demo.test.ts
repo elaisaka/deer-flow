@@ -36,6 +36,10 @@ describe("resolveStaticDemoArtifact", () => {
 
   it.each([
     ["unknown", ["mnt", "user-data", "outputs", "index.html"]],
+    [
+      "4f3e55ee-f853-43db-bfb3-7d1a411f03cb",
+      ["mnt", "user-data", "outputs", "darcy-proposal-video.mp4"],
+    ],
     [threadId, ["mnt", "user-data", "outputs", "missing.txt"]],
     [threadId, ["mnt", "user-data", "outputs", "..", "thread.json"]],
     [threadId, ["mnt", "user-data", "outputs", "%2e%2e", "thread.json"]],
@@ -72,6 +76,7 @@ describe("public demo threads", () => {
   it("recognizes only bundled demo thread IDs", () => {
     expect(isDemoThreadId(DEMO_THREAD_IDS[0])).toBe(true);
     expect(isDemoThreadId("not-a-demo-thread")).toBe(false);
+    expect(isDemoThreadId("4f3e55ee-f853-43db-bfb3-7d1a411f03cb")).toBe(false);
   });
 
   it("builds an encoded public route in mock mode", () => {
